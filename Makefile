@@ -1,0 +1,36 @@
+# define C compiler & flags
+CC = gcc
+CFLAGS = -Wall -g
+# define libraries to be linked (for example -lm)
+LIB = 
+
+# define sets of header source files and object files
+SRC1 = driver1.c data.c linked_list.c 
+SRC2 = driver2.c data.c linked_list.c array.c
+# OBJ is the same as SRC, just replace .c with .h
+OBJ1 = $(SRC1:.c=.o)
+OBJ2 = $(SRC2:.c=.o)
+ 
+# define the executable name(s)
+EXE1 = dict1
+EXE2 = dict2
+
+# the first target:
+$(EXE1): $(OBJ1) 
+	$(CC) $(CFLAGS) -o $(EXE1) $(OBJ1) $(LIB)
+
+$(EXE2): $(OBJ2)
+	$(CC) $(CFLAGS) -o $(EXE2) $(OBJ2) $(LIB)
+
+driver1.o: driver1.c data.h linked_list.h
+
+driver2.o: driver2.c data.h linked_list.h array.h
+
+data.o: data.c data.h
+
+linked_list.o: linked_list.c linked_list.h data.h
+
+array.o: array.c linked_list.h data.h array.h
+
+clean:
+	rm -f $(OBJ1) $(OBJ2) $(EXE1) $(EXE2)
