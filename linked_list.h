@@ -6,8 +6,18 @@
 // constant defnitions
 
 // data definitions
-typedef struct test test_t;
+typedef struct node node_t;
+typedef struct footpaths footpaths_t;
 
 // function prototypes
+footpaths_t *make_empty_list(void);
+
+int is_empty_list(footpaths_t *list);
+
+void free_list(footpaths_t *list);
+
+footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath);
+
+int get_head_id(footpaths_t *list);
 
 #endif
