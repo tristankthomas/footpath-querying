@@ -39,8 +39,8 @@ footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath) {
 
 int get_head_id(footpaths_t *list) {
     assert(list != NULL && list->head != NULL);
-    
-    return get_id(list->head->footpath);
+    int id = get_id(list->head->footpath);
+    return id;
 
 }
 

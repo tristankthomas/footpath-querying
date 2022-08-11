@@ -34,45 +34,71 @@ void skip_header_line(FILE *f) {
 footpath_t *footpath_read(FILE *f) {
 
 	footpath_t *fp = NULL;
-	int footpath_id, mcc_id, mccid_int, statusid, streetid, street_group;
-	double delta_z, distance, grade1in, rlmax, rlmin, start_lat, start_long, end_lat, end_long;
+    int footpath_id, reads = 0;
+	double delta_z, distance, grade1in, rlmax, rlmin, start_lat, start_long, end_lat, end_long, mcc_id, mccid_int, statusid, streetid, street_group;
 	char address[MAX_STR_LEN + 1], clue_sa[MAX_STR_LEN + 1], asset_type[MAX_STR_LEN + 1], segside[MAX_STR_LEN + 1];
 
-	if (fscanf(f, "%d,%[^,],%[^,],%[^,],%lf,%lf,%lf,%d,%d,%lf,%lf,%[^,],%d,%d,%d,%lf,%lf,%lf,%lf", 
-            &footpath_id, address, clue_sa, asset_type, &delta_z, &distance, &grade1in, 
-            &mcc_id, &mccid_int, &rlmax, &rlmin, segside, &statusid, &streetid, 
-            &street_group, &start_lat, &start_long, &end_lat, &end_long) == 19) {
+	reads += fscanf(f, "%d,", &footpath_id);
+    reads += read_string(f, address);
+    reads += read_string(f, clue_sa);
+    reads += read_string(f, asset_type);
+    reads += fscanf(f, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,", &delta_z, &distance, &grade1in, &mcc_id, &mccid_int, &rlmax, &rlmin);
+    reads += read_string(f, segside);
+    reads += fscanf(f, "%lf,%lf,%lf,%lf,%lf,%lf,%lf", &statusid, &streetid, &street_group, &start_lat, &start_long, &end_lat, &end_long);
 
-		fp = malloc(sizeof(*fp));     // allocates memory for s
-		assert(fp);
-		fp->footpath_id = footpath_id;
-		fp->address = strdup(address);     // duplicates strings name top s->name
+    if (reads == 19) {
+        fp = malloc(sizeof(*fp));     // allocates memory for s
+        assert(fp);
+        fp->footpath_id = footpath_id;
+        fp->address = strdup(address);     // duplicates strings name top s->name
         fp->clue_sa = strdup(clue_sa); 
         fp->asset_type = strdup(asset_type);
+        fp->delta_z = delta_z;
         fp->grade1in = grade1in;
         fp->distance = distance;
-        fp->mcc_id = mcc_id;
+        fp->mcc_id = (int) mcc_id;
+        fp->mccid_int = (int) mccid_int;
         fp->rlmax = rlmax;
         fp->rlmin = rlmin;
         fp->segside = strdup(segside);
-        fp->statusid = statusid;
-        fp->streetid = streetid;
-        fp->street_group = street_group;
+        fp->statusid = (int) statusid;
+        fp->streetid = (int) streetid;
+        fp->street_group = (int) street_group;
         fp->start_lat = start_lat;
         fp->start_long = start_long;
         fp->end_lat = end_lat;
         fp->end_long = end_long;
         
-		assert(fp->address);
+        assert(fp->address);
         assert(fp->clue_sa);
         assert(fp->asset_type);
         assert(fp->segside);
+    }
 
-	}
 	return fp;
 }
 
 int get_id(footpath_t *footpath) {
-    return footpath->footpath_id;
+    int id = footpath->footpath_id;
+    return id;
+}
+
+int read_string(FILE *f, char *str) {
+    char ch;
+    fscanf(f, "%c", &ch);
+    if (ch == '"'){
+        fscanf(f, "%[^\"]\",", str);
+        return 1;
+    } else if (ch == ',') {
+        str = "";
+        return 1;
+    } else {
+        str[0] = ch;
+        fscanf(f, "%[^,],", str + 1);
+        return 1;
+    }
+
+    return 0;
+
 }
 

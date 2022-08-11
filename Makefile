@@ -5,22 +5,21 @@ CFLAGS = -Wall -g
 LIB = 
 
 # define sets of header source files and object files
-SRC1 = driver.c data.c linked_list.c 
-SRC2 = driver.c data.c linked_list.c array.c
+SRC = driver.c data.c linked_list.c array.c
+
 # OBJ is the same as SRC, just replace .c with .h
-OBJ1 = $(SRC1:.c=.o)
-OBJ2 = $(SRC2:.c=.o)
+OBJ = $(SRC:.c=.o)
  
 # define the executable name(s)
 EXE1 = dict1
 EXE2 = dict2
 
 # the first target:
-$(EXE1): $(OBJ1) 
-	$(CC) $(CFLAGS) -o $(EXE1) $(OBJ1) $(LIB)
+$(EXE1): $(OBJ) 
+	$(CC) $(CFLAGS) -o $(EXE1) $(OBJ) $(LIB)
 
-$(EXE2): $(OBJ2)
-	$(CC) $(CFLAGS) -o $(EXE2) $(OBJ2) $(LIB)
+$(EXE2): $(OBJ)
+	$(CC) $(CFLAGS) -o $(EXE2) $(OBJ) $(LIB)
 
 driver.o: driver.c data.h linked_list.h array.h
 

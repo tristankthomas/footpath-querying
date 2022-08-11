@@ -84,6 +84,6 @@ void list_querying(char *data_file_name, FILE *input, FILE *output, FILE *out_fi
 
     footpaths_t *footpaths = get_footpath_list(data_file_name);
     int id = get_head_id(footpaths);
-    printf("%d", id);
+    printf("%d\n", id);
 
 }

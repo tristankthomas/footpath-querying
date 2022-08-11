@@ -14,6 +14,7 @@ footpath_t *footpath_read(FILE *f);
 
 void skip_header_line(FILE *f);
 
+int read_string(FILE *f, char *str);
 
 int get_id(footpath_t *footpath);
 
