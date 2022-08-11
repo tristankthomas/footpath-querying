@@ -20,4 +20,7 @@ footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath);
 
 int get_head_id(footpaths_t *list);
 
+void print_addrs(footpaths_t *list);
+
+
 #endif

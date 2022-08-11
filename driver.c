@@ -83,7 +83,10 @@ void list_querying(char *data_file_name, FILE *input, FILE *output, FILE *out_fi
     assert(dict_type == DICT1 || dict_type == DICT2);
 
     footpaths_t *footpaths = get_footpath_list(data_file_name);
-    int id = get_head_id(footpaths);
-    printf("%d\n", id);
+
+    print_addrs(footpaths);
+ 
+
+    
 
 }

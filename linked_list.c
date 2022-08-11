@@ -39,8 +39,21 @@ footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath) {
 
 int get_head_id(footpaths_t *list) {
     assert(list != NULL && list->head != NULL);
-    int id = get_id(list->head->footpath);
-    return id;
+    
+    return get_id(list->head->footpath);
 
 }
+
+void print_addrs(footpaths_t *list) {
+    node_t *curr = list->head;
+    while (curr != NULL) {
+        printf("%s\n", get_addr(curr->footpath));
+        curr = curr->next;
+    }
+    
+
+}
+
+
+
 

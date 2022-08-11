@@ -18,4 +18,6 @@ int read_string(FILE *f, char *str);
 
 int get_id(footpath_t *footpath);
 
+char* get_addr(footpath_t *footpath);
+
 #endif

@@ -36,7 +36,7 @@ footpath_t *footpath_read(FILE *f) {
 	footpath_t *fp = NULL;
     int footpath_id, reads = 0;
 	double delta_z, distance, grade1in, rlmax, rlmin, start_lat, start_long, end_lat, end_long, mcc_id, mccid_int, statusid, streetid, street_group;
-	char address[MAX_STR_LEN + 1], clue_sa[MAX_STR_LEN + 1], asset_type[MAX_STR_LEN + 1], segside[MAX_STR_LEN + 1];
+	char address[MAX_STR_LEN + 1] = "", clue_sa[MAX_STR_LEN + 1] = "", asset_type[MAX_STR_LEN + 1] = "", segside[MAX_STR_LEN + 1] = "";
 
 	reads += fscanf(f, "%d,", &footpath_id);
     reads += read_string(f, address);
@@ -102,3 +102,6 @@ int read_string(FILE *f, char *str) {
 
 }
 
+char* get_addr(footpath_t *footpath) {
+    return footpath->address;
+}
