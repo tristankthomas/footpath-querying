@@ -112,6 +112,11 @@ void list_querying(char *data_file_name, FILE *input, FILE *output,
     } else if (dict_type == 2) {
         node_t *arr[num_fps];
         get_sorted_array(footpaths, arr);
+
+        for (int i = 0; i < num_fps; i++) {
+            printf("%d) %d\n", i, get_addr(arr[i]));
+        }
+
         //footpaths_found = 
     }
 

@@ -21,7 +21,7 @@ footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath);
 
 int get_head_id(footpaths_t *list);
 
-void print_addrs(footpaths_t *list);
+// void print_addrs(footpaths_t *list);
 
 footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found);
 
@@ -29,6 +29,10 @@ void free_list(footpaths_t *fps);
 
 void get_sorted_array(footpaths_t *list, node_t **arr);
 
-void get_array(footpaths_t *list, node_t **arr);
+int get_array(footpaths_t *list, node_t **arr);
+
+//void node_swap(node_t )
+
+int get_addr(node_t *node);
 
 #endif

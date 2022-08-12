@@ -106,8 +106,9 @@ int read_string(FILE *f, char *str) {
 
 }
 
-char* get_addr(footpath_t *footpath) {
-    return footpath->address;
+int get_g(footpath_t *fp) {
+
+    return fp->grade1in;
 }
 
 int cmp_addr(footpath_t *fp, char *query) {
@@ -155,4 +156,14 @@ void free_footpath(footpath_t *fp) {
     free(fp->asset_type);
     free(fp->segside);
     free(fp);
+}
+
+int cmp_grade(footpath_t *fp1, footpath_t *fp2) {
+    if (fp1->grade1in == fp2->grade1in)
+        return 0;
+    else if (fp1->grade1in > fp2->grade1in)
+        return 1;
+    else 
+        return -1;
+
 }

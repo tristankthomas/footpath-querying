@@ -44,15 +44,15 @@ int get_head_id(footpaths_t *list) {
 
 }
 
-void print_addrs(footpaths_t *list) {
-    node_t *curr = list->head;
-    while (curr != NULL) {
-        printf("%s\n", get_addr(curr->footpath));
-        curr = curr->next;
-    }
+// void print_addrs(footpaths_t *list) {
+//     node_t *curr = list->head;
+//     while (curr != NULL) {
+//         printf("%s\n", get_addr(curr->footpath));
+//         curr = curr->next;
+//     }
     
 
-}
+// }
 
 footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found) {
 
@@ -97,11 +97,19 @@ void free_list(footpaths_t *fps) {
 
 void get_sorted_array(footpaths_t *list, node_t **arr) {
 
-    get_array(list, arr);
+    int num = get_array(list, arr);
+    node_t *tmp;
+    for (int i = 1; i < num; i++) {
+        for (int j = i - 1; j >= 0 && cmp_grade(arr[j]->footpath, arr[j + 1]->footpath) == 1; j--) {
+            tmp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = tmp;
+        }
+    }
 
 }
 
-void get_array(footpaths_t *list, node_t **arr) {
+int get_array(footpaths_t *list, node_t **arr) {
     node_t *curr = list->head;
     int cnt = 0;
     arr[cnt++] = curr;
@@ -112,8 +120,15 @@ void get_array(footpaths_t *list, node_t **arr) {
         curr = curr->next;
     }
 
+    return cnt - 1;
 }
 
+
+
+
+int get_addr(node_t *node) {
+    return get_g(node->footpath);
+}
 
 
 
