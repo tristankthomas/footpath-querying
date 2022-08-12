@@ -24,6 +24,7 @@
 int process_args(int argc, char *argv[]);
 footpaths_t *get_footpath_list(char *filename);
 void list_querying(char *data_file_name, FILE *input, FILE *output, FILE *out_file, int dict_type);
+int read_query(FILE *f, char *query);
 
 int main(int argc, char *argv[]) {
 
@@ -84,9 +85,39 @@ void list_querying(char *data_file_name, FILE *input, FILE *output, FILE *out_fi
 
     footpaths_t *footpaths = get_footpath_list(data_file_name);
 
-    print_addrs(footpaths);
- 
+    int num_found;
+    //print_addrs(footpaths);
+    footpath_t **footpaths_found = NULL;
 
+    char query[MAX_STR_LEN + 1] = "";
+
+    while (read_query(input, query)) {
+
+        footpaths_found = linked_list_search(footpaths, query, &num_found);
+		printf("%d\n", num_found);
+		free(footpaths_found);
+		strcpy(query, "");
+    }
     
+}
 
+int read_query(FILE *f, char *query) {
+	
+	char ch;
+	int valid = -1;
+	valid = fscanf(f, "%c", &ch);
+	if (valid == 1) {
+		if (ch == '\n') {
+			query = "";
+			return 1;
+		} else {
+			query[0] = ch;
+			fscanf(f, "%[^\n]\n", query + 1);
+			return 1;
+		}
+	} else {
+		return 0;
+	}
+
+	
 }

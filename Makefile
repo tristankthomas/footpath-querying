@@ -30,4 +30,4 @@ linked_list.o: linked_list.c linked_list.h data.h
 array.o: array.c linked_list.h data.h array.h
 
 clean:
-	rm -f $(OBJ1) $(OBJ2) $(EXE1) $(EXE2)
+	rm -f $(OBJ) $(OBJ) $(EXE1) $(EXE2)

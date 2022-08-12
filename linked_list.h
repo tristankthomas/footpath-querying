@@ -5,6 +5,7 @@
 
 // constant defnitions
 
+
 // data definitions
 typedef struct node node_t;
 typedef struct footpaths footpaths_t;
@@ -22,5 +23,6 @@ int get_head_id(footpaths_t *list);
 
 void print_addrs(footpaths_t *list);
 
+footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found);
 
 #endif

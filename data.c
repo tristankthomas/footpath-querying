@@ -105,3 +105,24 @@ int read_string(FILE *f, char *str) {
 char* get_addr(footpath_t *footpath) {
     return footpath->address;
 }
+
+int cmp_addr(footpath_t *fp, char *query) {
+    char *addr = fp->address;
+    return strcmp(query, addr);
+
+}
+
+footpath_t **add_footpath(footpath_t **fps, footpath_t *fp, int num) {
+    static int size = INIT_SIZE;
+    if (fps == NULL) {
+        fps = (footpath_t **) malloc(size * sizeof(*fps));
+        assert(fps);
+    } else if (num >= size) {
+		size *= 2;
+		fps = realloc(fps, size * sizeof(*fps));
+		assert(fps);
+	}
+    fps[num - 1] = fp;
+    //printf("%d\n", fp->footpath_id);
+    return fps;
+}
