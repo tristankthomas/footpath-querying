@@ -25,4 +25,6 @@ void print_addrs(footpaths_t *list);
 
 footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found);
 
+void free_list(footpaths_t *fps);
+
 #endif

@@ -77,6 +77,23 @@ footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found) {
 
 }
 
+void free_list(footpaths_t *fps) {
+    node_t *curr, *prev;
+    assert(fps != NULL);
+    curr = fps->head;
+
+    while (curr != NULL) {
+        prev = curr;
+        curr = curr->next;
+        free_footpath(prev->footpath);
+        free(prev);
+        
+        
+    }
+    free(fps);
+
+}
+
 
 
 

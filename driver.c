@@ -22,8 +22,12 @@
 #define DICT2 2
 
 int process_args(int argc, char *argv[]);
+
 footpaths_t *get_footpath_list(char *filename);
-void list_querying(char *data_file_name, FILE *input, FILE *output, FILE *out_file, int dict_type);
+
+void list_querying(char *data_file_name, FILE *input, FILE *output, 
+    FILE *out_file, int dict_type);
+
 int read_query(FILE *f, char *query);
 
 int main(int argc, char *argv[]) {
@@ -80,13 +84,15 @@ footpaths_t *get_footpath_list(char *filename) {
 }
 
 
-void list_querying(char *data_file_name, FILE *input, FILE *output, FILE *out_file, int dict_type) {
+void list_querying(char *data_file_name, FILE *input, FILE *output, 
+        FILE *out_file, int dict_type) {
+            
     assert(dict_type == DICT1 || dict_type == DICT2);
 
     footpaths_t *footpaths = get_footpath_list(data_file_name);
 
     int num_found;
-    //print_addrs(footpaths);
+
     footpath_t **footpaths_found = NULL;
 
     char query[MAX_STR_LEN + 1] = "";
@@ -109,6 +115,8 @@ void list_querying(char *data_file_name, FILE *input, FILE *output, FILE *out_fi
 
 		strcpy(query, "");
     }
+
+    free_list(footpaths);
     
 }
 

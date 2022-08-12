@@ -1,3 +1,4 @@
+
 #ifndef _DATA_H_
 #define _DATA_H_
 
@@ -26,5 +27,7 @@ int cmp_addr(footpath_t *fp, char *query);
 footpath_t **add_footpath(footpath_t **fps, footpath_t *fp, int num);
 
 void footpath_print(FILE *f, footpath_t **fps, int num_found);
+
+void free_footpath(footpath_t *fp);
 
 #endif
