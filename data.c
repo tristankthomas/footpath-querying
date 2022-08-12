@@ -22,9 +22,9 @@ struct footpath {
     int streetid;
     int street_group;
     double start_lat;
-    double start_long;
+    double start_lon;
     double end_lat;
-    double end_long;
+    double end_lon;
 };
 
 void skip_header_line(FILE *f) {
@@ -35,7 +35,7 @@ footpath_t *footpath_read(FILE *f) {
 
 	footpath_t *fp = NULL;
     int footpath_id, reads = 0;
-	double delta_z, distance, grade1in, rlmax, rlmin, start_lat, start_long, end_lat, end_long, mcc_id, mccid_int, statusid, streetid, street_group;
+	double delta_z, distance, grade1in, rlmax, rlmin, start_lat, start_lon, end_lat, end_lon, mcc_id, mccid_int, statusid, streetid, street_group;
 	char address[MAX_STR_LEN + 1] = "", clue_sa[MAX_STR_LEN + 1] = "", asset_type[MAX_STR_LEN + 1] = "", segside[MAX_STR_LEN + 1] = "";
 
 	reads += fscanf(f, "%d,", &footpath_id);
@@ -44,7 +44,7 @@ footpath_t *footpath_read(FILE *f) {
     reads += read_string(f, asset_type);
     reads += fscanf(f, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,", &delta_z, &distance, &grade1in, &mcc_id, &mccid_int, &rlmax, &rlmin);
     reads += read_string(f, segside);
-    reads += fscanf(f, "%lf,%lf,%lf,%lf,%lf,%lf,%lf", &statusid, &streetid, &street_group, &start_lat, &start_long, &end_lat, &end_long);
+    reads += fscanf(f, "%lf,%lf,%lf,%lf,%lf,%lf,%lf", &statusid, &streetid, &street_group, &start_lat, &start_lon, &end_lat, &end_lon);
 
     if (reads == 19) {
         fp = malloc(sizeof(*fp));     // allocates memory for s
@@ -65,9 +65,9 @@ footpath_t *footpath_read(FILE *f) {
         fp->streetid = (int) streetid;
         fp->street_group = (int) street_group;
         fp->start_lat = start_lat;
-        fp->start_long = start_long;
+        fp->start_lon = start_lon;
         fp->end_lat = end_lat;
-        fp->end_long = end_long;
+        fp->end_lon = end_lon;
         
         assert(fp->address);
         assert(fp->clue_sa);
@@ -125,4 +125,11 @@ footpath_t **add_footpath(footpath_t **fps, footpath_t *fp, int num) {
     fps[num - 1] = fp;
     //printf("%d\n", fp->footpath_id);
     return fps;
+}
+
+void footpath_print(FILE *f, footpath_t **fps, int num_found) {
+    for (int i = num_found - 1; i >= 0; i--) {
+        fprintf(f, "--> footpath_id: %d || address: %s || clue_sa: %s || asset_type: %s || deltaz: %.2f || distance: %.2f || grade1in: %.1f || mcc_id: %d || mccid_int: %d || rlmax: %.2f || rlmin: %.2f || segside: %s || statusid: %d || streetid: %d || street_group: %d || start_lat: %.6f || start_lon: %.6f || end_lat: %.6f || end_lon: %.6f || \n",
+            fps[i]->footpath_id, fps[i]->address, fps[i]->clue_sa, fps[i]->asset_type, fps[i]->delta_z, fps[i]->distance, fps[i]->grade1in, fps[i]->mcc_id, fps[i]->mccid_int, fps[i]->rlmax, fps[i]->rlmin, fps[i]->segside, fps[i]->statusid, fps[i]->streetid, fps[i]->street_group, fps[i]->start_lat, fps[i]->start_lon, fps[i]->end_lat, fps[i]->end_lon);
+    }
 }

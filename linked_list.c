@@ -59,9 +59,9 @@ footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found) {
     footpath_t **fps_found = NULL;
     node_t *curr = fps->head;
     *num_found = 0;
-    int cnt = 0;
+    
     while (curr != NULL) {
-        cnt++;
+
         if (cmp_addr(curr->footpath, query) == 0) {
             (*num_found)++;
             fps_found = add_footpath(fps_found, curr->footpath, *num_found);

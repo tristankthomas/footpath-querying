@@ -94,8 +94,19 @@ void list_querying(char *data_file_name, FILE *input, FILE *output, FILE *out_fi
     while (read_query(input, query)) {
 
         footpaths_found = linked_list_search(footpaths, query, &num_found);
-		printf("%d\n", num_found);
+		
+        fprintf(out_file, "%s\n", query);
+        if (footpaths_found) {
+            footpath_print(out_file, footpaths_found, num_found);
+            printf("%s --> %d\n", query, num_found);
+
+        } else {
+            printf("%s --> NOTFOUND\n", query);
+        }
+
+
 		free(footpaths_found);
+
 		strcpy(query, "");
     }
     
