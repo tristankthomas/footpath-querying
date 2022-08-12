@@ -37,22 +37,6 @@ footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath) {
     return list;
 }
 
-int get_head_id(footpaths_t *list) {
-    assert(list != NULL && list->head != NULL);
-    
-    return get_id(list->head->footpath);
-
-}
-
-// void print_addrs(footpaths_t *list) {
-//     node_t *curr = list->head;
-//     while (curr != NULL) {
-//         printf("%s\n", get_addr(curr->footpath));
-//         curr = curr->next;
-//     }
-    
-
-// }
 
 footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found) {
 
@@ -122,14 +106,6 @@ int get_array(footpaths_t *list, node_t **arr) {
 
     return cnt - 1;
 }
-
-
-
-
-// int get_addr(node_t *node) {
-//     return get_g(node->footpath);
-// }
-
 
 
 footpath_t *binary_search(node_t **arr, double query, int num) {

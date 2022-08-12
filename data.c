@@ -82,11 +82,6 @@ footpath_t *footpath_read(FILE *f) {
 	return fp;
 }
 
-int get_id(footpath_t *footpath) {
-    int id = footpath->footpath_id;
-    return id;
-}
-
 int read_string(FILE *f, char *str) {
     char ch = 0;
     fscanf(f, "%c", &ch);

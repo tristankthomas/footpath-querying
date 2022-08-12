@@ -86,6 +86,7 @@ void list_querying(char *data_file_name, FILE *input, FILE *output,
     footpath_t **footpaths_found = NULL;
 
     char query[MAX_STR_LEN + 1] = "";
+    
 	// could add switch statement instead
     if (dict_type == 1) {
 
