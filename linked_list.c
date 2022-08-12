@@ -126,9 +126,47 @@ int get_array(footpaths_t *list, node_t **arr) {
 
 
 
-int get_addr(node_t *node) {
-    return get_g(node->footpath);
-}
+// int get_addr(node_t *node) {
+//     return get_g(node->footpath);
+// }
 
+
+
+footpath_t *binary_search(node_t **arr, double query, int num) {
+
+    if (query <= get_grade1in(arr[0]->footpath)) {
+        return arr[0]->footpath;
+        
+    }
+    if (query >= get_grade1in(arr[num - 1]->footpath)) {
+        return arr[num - 1]->footpath;
+    }
+
+	int start_index = 0, end_index = num;
+    int middle = 0;
+
+    while (start_index < end_index){
+
+		middle = (start_index + end_index) / 2;
+
+		if (query == get_grade1in(arr[middle]->footpath))
+			return arr[middle]->footpath;
+
+		if (get_grade1in(arr[middle]->footpath) > query) {
+			if (middle > 0 && query > get_grade1in(arr[middle - 1]->footpath))
+                return get_closest(arr[middle - 1]->footpath, arr[middle]->footpath, query);
+        end_index = middle;        
+        }
+		else {
+            if (middle < num - 1 && query < get_grade1in(arr[middle + 1]->footpath))
+                return get_closest(arr[middle]->footpath, arr[middle + 1]->footpath, query);
+            // update i
+            start_index = middle + 1;
+
+        }
+    }
+
+    return arr[middle]->footpath;
+}
 
 

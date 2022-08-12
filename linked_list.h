@@ -33,6 +33,8 @@ int get_array(footpaths_t *list, node_t **arr);
 
 //void node_swap(node_t )
 
-int get_addr(node_t *node);
+//int get_addr(node_t *node);
+
+footpath_t *binary_search(node_t **arr, double query, int num);
 
 #endif

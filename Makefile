@@ -5,7 +5,7 @@ CFLAGS = -Wall -g
 LIB = 
 
 # define sets of header source files and object files
-SRC = driver.c data.c linked_list.c array.c
+SRC = driver.c data.c linked_list.c
 
 # OBJ is the same as SRC, just replace .c with .h
 OBJ = $(SRC:.c=.o)
@@ -21,13 +21,11 @@ $(EXE1): $(OBJ)
 $(EXE2): $(OBJ)
 	$(CC) $(CFLAGS) -o $(EXE2) $(OBJ) $(LIB)
 
-driver.o: driver.c data.h linked_list.h array.h
+driver.o: driver.c data.h linked_list.h
 
 data.o: data.c data.h
 
 linked_list.o: linked_list.c linked_list.h data.h
-
-array.o: array.c linked_list.h data.h array.h
 
 clean:
 	rm -f $(OBJ) $(OBJ) $(EXE1) $(EXE2)

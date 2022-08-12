@@ -106,9 +106,10 @@ int read_string(FILE *f, char *str) {
 
 }
 
-int get_g(footpath_t *fp) {
+double get_grade1in(footpath_t *fp) {
 
     return fp->grade1in;
+    
 }
 
 int cmp_addr(footpath_t *fp, char *query) {
@@ -133,21 +134,25 @@ footpath_t **add_footpath(footpath_t **fps, footpath_t *fp, int num) {
 
 
 
-void footpath_print(FILE *f, footpath_t **fps, int num_found) {
+void footpaths_print(FILE *f, footpath_t **fps, int num_found) {
     for (int i = num_found - 1; i >= 0; i--) {
-        fprintf(f, "--> footpath_id: %d || address: %s || clue_sa: %s || "
+        footpath_print(f, fps[i]);
+    }
+}
+
+void footpath_print(FILE *f, footpath_t *fp) {
+
+    fprintf(f, "--> footpath_id: %d || address: %s || clue_sa: %s || "
             "asset_type: %s || deltaz: %.2f || distance: %.2f || "
             "grade1in: %.1f || mcc_id: %d || mccid_int: %d || rlmax: %.2f || "
             "rlmin: %.2f || segside: %s || statusid: %d || streetid: %d || "
             "street_group: %d || start_lat: %.6f || start_lon: %.6f || "
             "end_lat: %.6f || end_lon: %.6f || \n",
-            fps[i]->footpath_id, fps[i]->address, fps[i]->clue_sa, 
-            fps[i]->asset_type, fps[i]->delta_z, fps[i]->distance, 
-            fps[i]->grade1in, fps[i]->mcc_id, fps[i]->mccid_int, fps[i]->rlmax, 
-            fps[i]->rlmin, fps[i]->segside, fps[i]->statusid, fps[i]->streetid, 
-            fps[i]->street_group, fps[i]->start_lat, fps[i]->start_lon, 
-            fps[i]->end_lat, fps[i]->end_lon);
-    }
+            fp->footpath_id, fp->address, fp->clue_sa, fp->asset_type, fp->delta_z, 
+            fp->distance, fp->grade1in, fp->mcc_id, fp->mccid_int, fp->rlmax, 
+            fp->rlmin, fp->segside, fp->statusid, fp->streetid, fp->street_group, 
+            fp->start_lat, fp->start_lon, fp->end_lat, fp->end_lon);
+
 }
 
 void free_footpath(footpath_t *fp) {
@@ -165,5 +170,14 @@ int cmp_grade(footpath_t *fp1, footpath_t *fp2) {
         return 1;
     else 
         return -1;
+
+}
+
+footpath_t *get_closest(footpath_t *fp1, footpath_t *fp2, double value) {
+
+    if (value - fp1->grade1in >= fp2->grade1in - value)
+        return fp2;
+    else
+        return fp1;
 
 }

@@ -16,7 +16,6 @@
 
 #include "data.h"
 #include "linked_list.h"
-#include "array.h"
 
 #define DICT1 1
 #define DICT2 2
@@ -86,17 +85,17 @@ void list_querying(char *data_file_name, FILE *input, FILE *output,
     footpaths_t *footpaths = get_footpath_list(data_file_name, &num_fps);
     footpath_t **footpaths_found = NULL;
 
+    char query[MAX_STR_LEN + 1] = "";
 	// could add switch statement instead
     if (dict_type == 1) {
 
-        char query[MAX_STR_LEN + 1] = "";
         while (read_query(input, query)) {
 
             footpaths_found = linked_list_search(footpaths, query, &num_found);
             
             fprintf(out_file, "%s\n", query);
             if (footpaths_found) {
-                footpath_print(out_file, footpaths_found, num_found);
+                footpaths_print(out_file, footpaths_found, num_found);
                 printf("%s --> %d\n", query, num_found);
 
             } else {
@@ -111,13 +110,20 @@ void list_querying(char *data_file_name, FILE *input, FILE *output,
 
     } else if (dict_type == 2) {
         node_t *arr[num_fps];
+
+        double dquery = 0.0;
+        footpath_t *footpath_found = NULL;
         get_sorted_array(footpaths, arr);
 
-        for (int i = 0; i < num_fps; i++) {
-            printf("%d) %d\n", i, get_addr(arr[i]));
-        }
+        while (fscanf(input, "%s", query) == 1) {
+            dquery = atof(query);
+            footpath_found = binary_search(arr, dquery, num_fps);
 
-        //footpaths_found = 
+            fprintf(out_file, "%s\n", query);
+            footpath_print(out_file, footpath_found);
+            printf("%s --> %.1f\n", query, get_grade1in(footpath_found));
+
+        }
     }
 
     free_list(footpaths);
