@@ -95,5 +95,25 @@ void free_list(footpaths_t *fps) {
 }
 
 
+void get_sorted_array(footpaths_t *list, node_t **arr) {
+
+    get_array(list, arr);
+
+}
+
+void get_array(footpaths_t *list, node_t **arr) {
+    node_t *curr = list->head;
+    int cnt = 0;
+    arr[cnt++] = curr;
+    
+    while (curr != NULL) {
+        arr[cnt] = curr->next;
+        cnt++;
+        curr = curr->next;
+    }
+
+}
+
+
 
 

@@ -27,4 +27,8 @@ footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found);
 
 void free_list(footpaths_t *fps);
 
+void get_sorted_array(footpaths_t *list, node_t **arr);
+
+void get_array(footpaths_t *list, node_t **arr);
+
 #endif

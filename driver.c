@@ -23,7 +23,7 @@
 
 int process_args(int argc, char *argv[]);
 
-footpaths_t *get_footpath_list(char *filename);
+footpaths_t *get_footpath_list(char *filename, int *num);
 
 void list_querying(char *data_file_name, FILE *input, FILE *output, 
     FILE *out_file, int dict_type);
@@ -37,15 +37,7 @@ int main(int argc, char *argv[]) {
     FILE *output_file = fopen(argv[3], "w");
     assert(output_file);
 
-    switch (dict_type) {
-		case DICT1:
-        list_querying(argv[2], stdin, stdout, output_file, dict_type);
-		break;
-		case DICT2:
-		default:
-			fprintf(stderr, "Dictionary type %d not yet implemented\n", dict_type);
-			exit(EXIT_FAILURE);
-	}
+    list_querying(argv[2], stdin, stdout, output_file, dict_type);
 
     fclose(output_file);
 
@@ -64,7 +56,7 @@ int process_args(int argc, char *argv[]) {
 	return atoi(argv[1]);
 }
 
-footpaths_t *get_footpath_list(char *filename) {
+footpaths_t *get_footpath_list(char *filename, int *num) {
     
 	FILE *f = fopen(filename, "r");
 	assert(f);
@@ -74,7 +66,9 @@ footpaths_t *get_footpath_list(char *filename) {
 
 	footpath_t *fp;
 	while ((fp = footpath_read(f))) {
+
 		footpaths = insert_at_head(footpaths, fp);
+        (*num)++;
 
 	}
 	
@@ -88,43 +82,49 @@ void list_querying(char *data_file_name, FILE *input, FILE *output,
         FILE *out_file, int dict_type) {
             
     assert(dict_type == DICT1 || dict_type == DICT2);
-
-    footpaths_t *footpaths = get_footpath_list(data_file_name);
-
-    int num_found;
-
+    int num_found, num_fps = 0;
+    footpaths_t *footpaths = get_footpath_list(data_file_name, &num_fps);
     footpath_t **footpaths_found = NULL;
 
-    char query[MAX_STR_LEN + 1] = "";
+	// could add switch statement instead
+    if (dict_type == 1) {
 
-    while (read_query(input, query)) {
+        char query[MAX_STR_LEN + 1] = "";
+        while (read_query(input, query)) {
 
-        footpaths_found = linked_list_search(footpaths, query, &num_found);
-		
-        fprintf(out_file, "%s\n", query);
-        if (footpaths_found) {
-            footpath_print(out_file, footpaths_found, num_found);
-            printf("%s --> %d\n", query, num_found);
+            footpaths_found = linked_list_search(footpaths, query, &num_found);
+            
+            fprintf(out_file, "%s\n", query);
+            if (footpaths_found) {
+                footpath_print(out_file, footpaths_found, num_found);
+                printf("%s --> %d\n", query, num_found);
 
-        } else {
-            printf("%s --> NOTFOUND\n", query);
+            } else {
+                printf("%s --> NOTFOUND\n", query);
+            }
+
+            free(footpaths_found);
+
+            strcpy(query, "");
+
         }
 
-
-		free(footpaths_found);
-
-		strcpy(query, "");
+    } else if (dict_type == 2) {
+        node_t *arr[num_fps];
+        get_sorted_array(footpaths, arr);
+        //footpaths_found = 
     }
 
     free_list(footpaths);
     
+
+
 }
 
 int read_query(FILE *f, char *query) {
 	
 	char ch;
-	int valid = -1;
-	valid = fscanf(f, "%c", &ch);
+	int valid = fscanf(f, "%c", &ch);
 	if (valid == 1) {
 		if (ch == '\n') {
 			query = "";
