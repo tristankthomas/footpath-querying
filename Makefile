@@ -1,8 +1,6 @@
 # define C compiler & flags
 CC = gcc
 CFLAGS = -Wall -g
-# define libraries to be linked (for example -lm)
-LIB = 
 
 # define sets of header source files and object files
 SRC = driver.c data.c linked_list.c
