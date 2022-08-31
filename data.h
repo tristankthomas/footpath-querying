@@ -15,7 +15,7 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #define MAX_STR_LEN 128
 #define INIT_SIZE 2
 
-/* --- Data definitions --- */
+/* --- Data declarations --- */
 typedef struct footpath footpath_t;
 
 /* -- Function prototypes - */

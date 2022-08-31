@@ -11,29 +11,29 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 
 #include "data.h"
 
-/* --- Data definitions --- */
+/* --- Data declarations --- */
 typedef struct node node_t;
-typedef struct footpaths footpaths_t;
+typedef struct footpaths_ll footpathsll_t;
 
 
 /* -- Function prototypes - */
 /* Allocates and initialises an empty linked list */
-footpaths_t *make_empty_list(void);
+footpathsll_t *make_empty_list(void);
 
 /* Inserts an element at the head of the list */
-footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath);
+footpathsll_t *insert_at_head(footpathsll_t *list, footpath_t *footpath);
 
 /* Linearly searches the linked list and returns the footpath based on the query */
-footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found);
+footpath_t **linked_list_search(footpathsll_t *fps, char *query, int *num_found);
 
 /* Frees the linked list including the individual nodes and the footpath structs */
-void free_list(footpaths_t *fps);
+void free_list(footpathsll_t *fps);
 
 /* Produces an array from the linked list and sorts it using insertion sort. */
-void get_sorted_array(footpaths_t *list, node_t **arr);
+void get_sorted_array(footpathsll_t *list, node_t **arr);
 
 /* Produces array from linked list */
-int get_array(footpaths_t *list, node_t **arr);
+int get_array(footpathsll_t *list, node_t **arr);
 
 /* Finds the footpath with the grade1in value closest to the query using binary search 
  *   of the sorted array */

@@ -19,14 +19,17 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 
 #include "data.h"
 #include "linked_list.h"
+#include "quad_tree.h"
 
 #define DICT1 1
 #define DICT2 2
+#define DICT3 3
+#define DICT4 4
 
 /* -- function prototypes - */
 int process_args(int argc, char *argv[]);
 
-footpaths_t *get_footpath_list(char *filename, int *num);
+footpathsll_t *get_footpath_list(char *filename, int *num);
 
 void querying(char *data_file_name, FILE *input, FILE *output, 
     FILE *out_file, int dict_type);
@@ -79,11 +82,11 @@ void querying(char *data_file_name, FILE *input, FILE *output,
     int num_found, num_fps = 0;
     char query[MAX_STR_LEN + 1] = "";
 
-    footpath_t **footpaths_found = NULL;
-    /* creates footpath linked list */
-    footpaths_t *footpaths = get_footpath_list(data_file_name, &num_fps);
-    
     if (dict_type == 1) {
+        /* creates footpath linked list */
+        footpathsll_t *footpaths = get_footpath_list(data_file_name, &num_fps);
+
+        footpath_t **footpaths_found = NULL;
 
         /* reads query input line by line */
         while (read_query(input, query)) {
@@ -109,9 +112,12 @@ void querying(char *data_file_name, FILE *input, FILE *output,
             strcpy(query, "");
 
         }
+        free_list(footpaths);
 
     } else if (dict_type == 2) {
-
+        /* creates footpath linked list */
+        footpathsll_t *footpaths = get_footpath_list(data_file_name, &num_fps);
+        
         node_t *arr[num_fps];
         footpath_t *footpath_found = NULL;
         double dquery = 0.0;
@@ -132,20 +138,23 @@ void querying(char *data_file_name, FILE *input, FILE *output,
             printf("%s --> %.1f\n", query, get_grade1in(footpath_found));
 
         }
+        
+    } else if (dict_type == 3) {
+        
     }
 
-    free_list(footpaths);
+    
 
 }
 
 /* ========================================================================== */
 /* Reads the footpath data file into a linked list */
-footpaths_t *get_footpath_list(char *filename, int *num) {
+footpathsll_t *get_footpath_list(char *filename, int *num) {
     
 	FILE *f = fopen(filename, "r");
 	assert(f);
     /* creates empty linked list */
-	footpaths_t *footpaths = make_empty_list();
+	footpathsll_t *footpaths = make_empty_list();
 
     /* starts reading input file */
 	skip_header_line(f);

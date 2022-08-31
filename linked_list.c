@@ -23,19 +23,19 @@ struct node {
     node_t *next;
 };
 
-struct footpaths {
+struct footpaths_ll {
     node_t *head;
     node_t *foot;
 };
 
 /* ========================== Linked list functions ========================= */
 /* Allocates and initialises an empty linked list */
-footpaths_t *make_empty_list(void) {
+footpathsll_t *make_empty_list(void) {
 
-    footpaths_t *list;
+    footpathsll_t *list;
 
     /* allocates memory for linked list (2 ptrs - 16 bytes) */
-    list = (footpaths_t *) malloc(sizeof(*list));
+    list = (footpathsll_t *) malloc(sizeof(*list));
     assert(list != NULL);
     list->head = list->foot = NULL;
 
@@ -44,7 +44,7 @@ footpaths_t *make_empty_list(void) {
 
 /* ========================================================================== */
 /* Inserts an element at the head of the list */
-footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath) {
+footpathsll_t *insert_at_head(footpathsll_t *list, footpath_t *footpath) {
 
     node_t *new;
 
@@ -65,7 +65,7 @@ footpaths_t *insert_at_head(footpaths_t *list, footpath_t *footpath) {
 
 /* ========================================================================== */
 /* Frees the linked list including the individual nodes and the footpath structs */
-void free_list(footpaths_t *fps) {
+void free_list(footpathsll_t *fps) {
 
     assert(fps != NULL);
     node_t *curr, *prev;
@@ -94,7 +94,7 @@ void free_list(footpaths_t *fps) {
 /* Produces an array from the linked list and sorts it using insertion sort.
  * The insertion sort component was adapted from Alistair Moffat textbook
  * chapter 7. */
-void get_sorted_array(footpaths_t *list, node_t **arr) {
+void get_sorted_array(footpathsll_t *list, node_t **arr) {
 
     int num = get_array(list, arr);
     node_t *tmp;
@@ -112,7 +112,7 @@ void get_sorted_array(footpaths_t *list, node_t **arr) {
 
 /* ========================================================================== */
 /* Produces array from linked list */
-int get_array(footpaths_t *list, node_t **arr) {
+int get_array(footpathsll_t *list, node_t **arr) {
 
     node_t *curr = list->head;
     int cnt = 0;
@@ -121,8 +121,7 @@ int get_array(footpaths_t *list, node_t **arr) {
     
     /* iterates through linked list */
     while (curr != NULL) {
-        arr[cnt] = curr->next;
-        cnt++;
+        arr[cnt++] = curr->next;
         curr = curr->next;
     }
 
@@ -131,7 +130,7 @@ int get_array(footpaths_t *list, node_t **arr) {
 
 /* ============================ Search functions ============================ */
 /* Linearly searches the linked list and returns the footpath based on the query */
-footpath_t **linked_list_search(footpaths_t *fps, char *query, int *num_found) {
+footpath_t **linked_list_search(footpathsll_t *fps, char *query, int *num_found) {
 
     footpath_t **fps_found = NULL;
     node_t *curr = fps->head;
