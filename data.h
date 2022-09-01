@@ -11,7 +11,7 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 
 #include <stdio.h>
 
-/* -- constant definitions - */
+/* -- Constant definitions - */
 #define MAX_STR_LEN 128
 #define INIT_SIZE 2
 

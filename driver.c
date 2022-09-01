@@ -31,7 +31,9 @@ int process_args(int argc, char *argv[]);
 
 footpathsll_t *get_footpath_list(char *filename, int *num);
 
-void querying(char *data_file_name, FILE *input, FILE *output, 
+qt_node_t *get_footpath_tree(char *filename, int *num, char **arguments);
+
+void querying(char **arguments, FILE *input, FILE *output, 
     FILE *out_file, int dict_type);
 
 int read_query(FILE *f, char *query);
@@ -47,7 +49,7 @@ int main(int argc, char *argv[]) {
     assert(output_file);
 
     /* creates required data structure and performs query */
-    querying(argv[2], stdin, stdout, output_file, dict_type);
+    querying(argv, stdin, stdout, output_file, dict_type);
 
     fclose(output_file);
 
@@ -61,7 +63,7 @@ int main(int argc, char *argv[]) {
 int process_args(int argc, char *argv[]) {
     
     /* checks the command line arguments are valid */
-	if (argc < 4 || (atoi(argv[1]) !=  DICT1 && atoi(argv[1]) != DICT2)) {
+	if (argc < 4) {
 		fprintf(stderr, "Usage: %s dictionary_type input_file_name output_file_name, where:\n", argv[0]);
 		fprintf(stderr, "       \t - dictionary_type is \"1\" for linear search lookup using address and \"2\" "
                         " for binary search lookup using grade1in\n");
@@ -76,10 +78,11 @@ int process_args(int argc, char *argv[]) {
 
 /* ========================================================================== */
 /* Performs most of the functions for querying the list and the sorted array */
-void querying(char *data_file_name, FILE *input, FILE *output, 
+void querying(char **arguments, FILE *input, FILE *output, 
         FILE *out_file, int dict_type) {
 
     int num_found, num_fps = 0;
+    char *data_file_name = arguments[2];
     char query[MAX_STR_LEN + 1] = "";
 
     if (dict_type == 1) {
@@ -140,7 +143,10 @@ void querying(char *data_file_name, FILE *input, FILE *output,
         }
         
     } else if (dict_type == 3) {
-        
+        /* creates footpath quad tree */
+        qt_node_t *quad_tree = get_footpath_tree(data_file_name, &num_fps, arguments);
+
+
     }
 
     
@@ -174,6 +180,24 @@ footpathsll_t *get_footpath_list(char *filename, int *num) {
 	return footpaths;
 }
 
+
+/* ========================================================================== */
+/* Reads the footpath data into a quad tree based on longitudes and latitudes */
+qt_node_t *get_footpath_tree(char *filename, int *num, char **arguments) {
+
+    rectangle_2D_t *root_rect = NULL;
+    root_rect = get_root_rect(root_rect, arguments);
+
+    FILE *f = fopen(filename, "r");
+    assert(f);
+    /* creates empty quad tree */
+    qt_node_t *root = make_empty_tree(root_rect);
+
+
+
+    return root;
+
+}
 
 /* ========================================================================== */
 /* Reads query input to account for blank queries */
