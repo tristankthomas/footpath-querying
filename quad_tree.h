@@ -31,8 +31,8 @@ qt_node_t *insert_data(qt_node_t *node, footpath_t *footpath, point_2D_t *coords
 quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect);
 int in_rectangle(point_2D_t *point, rectangle_2D_t *rect);
 point_2D_t *get_coord(footpath_t *fp, int point_type);
-rectangle_2D_t make_rect(point_2D_t bot_left, point_2D_t top_right);
+rectangle_2D_t *make_rect(point_2D_t bot_left, point_2D_t top_right);
 point_2D_t make_point(long double x, long double y);
-qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new);
+qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new, point_2D_t *new_coords, point_2D_t *old_coords);
 
 #endif

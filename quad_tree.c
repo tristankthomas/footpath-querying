@@ -31,6 +31,7 @@ struct qt_node {
     rectangle_2D_t *rectangle;
     qt_node_t *SW, *NW, *NE, *SE;
     footpath_t *footpath; // could make this a linked list
+    point_2D_t *coords;
     int colour;
 };
 
@@ -104,115 +105,120 @@ point_2D_t *get_coord(footpath_t *fp, int point_type) {
 qt_node_t *insert_data(qt_node_t *node, footpath_t *footpath, point_2D_t *coords) {
 
 
-    // if (!in_rectangle(coords, node->rectangle)){
-    //     return NULL;
-    // }
+    if (!in_rectangle(coords, node->rectangle)){
+         return node;
+    }
     // WHITE (only occurs once in insersion)
     if (node->colour == WHITE) {
+
         qt_node_t *newnode = create_new_node(node->rectangle);
         newnode->footpath = footpath;
+        newnode->coords = coords;
         newnode->colour = BLACK;
         return newnode;
+
     } 
 
     if (node->colour == BLACK) {
-        //subdivide(node, node->footpath, footpath);
+
         footpath_t *new = footpath;
         footpath_t *old = node->footpath;
-        node = subdivide(node, new, old); // subdivide and store rectangles to each of 4 quadrants (white nodes) (change parent node colour to grey)
-        
+        point_2D_t *new_coords = coords;
+        point_2D_t *old_coords = node->coords;
+        node = subdivide(node, new, old, new_coords, old_coords); // subdivide and store rectangles to each of 4 quadrants (white nodes) (change parent node colour to grey)
+        return node;
     }
 
-    // if (node->colour == GREY) {
+    if (node->colour == GREY) {
 
-    //     if (determine_quadrant(coords, node->rectangle) == NW) {
-    //         insert_data(nw_quad, footpath, coords); // if next quadrant is leaf node will either subdivide or insert
+        if (determine_quadrant(coords, node->rectangle) == NW) {
+            node->NW = insert_data(node->NW, footpath, coords); // if next quadrant is leaf node will either subdivide or insert
 
-    //     } else if (determine_quadrant(coords, node->rectangle) == NE) {
+        } else if (determine_quadrant(coords, node->rectangle) == NE) {
+            node->NE = insert_data(node->NE, footpath, coords);
 
+        } else if (determine_quadrant(coords, node->rectangle) == SW) {
+            node->SW = insert_data(node->SW, footpath, coords);
 
-    //     } else if (determine_quadrant(coords, node->rectangle) == SW) {
+        } else if (determine_quadrant(coords, node->rectangle) == SE) {
+            node->SE = insert_data(node->SE, footpath, coords);
 
-    //     } else if (determine_quadrant(coords, node->rectangle) == SE) {
-    //     }
-    // }
-
-// if black subdivide -> add the points to new node -> change parent to grey
+        }
+    }
 
     return node;
 
 }
 
-qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new) {
+qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new, point_2D_t *new_coords, point_2D_t *old_coords) {
 
     long double centre_x = node->rectangle->bot_left.x + ((node->rectangle->top_right.x - node->rectangle->bot_left.x) / 2);
     long double centre_y = node->rectangle->bot_left.y + ((node->rectangle->top_right.y - node->rectangle->bot_left.y) / 2);
 
-    rectangle_2D_t sw, se, nw, ne;
+    rectangle_2D_t *sw, *se, *nw, *ne;
     sw = make_rect(node->rectangle->bot_left, make_point(centre_x, centre_y));
     se = make_rect(make_point(centre_x, node->rectangle->bot_left.y), make_point(node->rectangle->top_right.x, centre_y));
     nw = make_rect(make_point(node->rectangle->bot_left.x, centre_y), make_point(centre_x, node->rectangle->top_right.y));
     ne = make_rect(make_point(centre_x, centre_y), node->rectangle->top_right);
 
-
-    node->NE = create_new_node(&ne);
-    node->NW = create_new_node(&nw);
-    node->SE = create_new_node(&se);
-    node->SW = create_new_node(&sw);
+    node->NE = create_new_node(ne);
+    node->NW = create_new_node(nw);
+    node->SE = create_new_node(se);
+    node->SW = create_new_node(sw);
 
     node->colour = GREY;
     node->footpath = NULL;
-    quadrant_t quad = NE;
+    node->coords = NULL;
 
-    printf("this is %d\n", determine_quadrant(get_coord(fp_old, 0), node->rectangle));
-    printf("this is %d\n", determine_quadrant(get_coord(fp_new, 1), node->rectangle));
-    if (determine_quadrant(get_coord(fp_old, 0), node->rectangle) == determine_quadrant(get_coord(fp_new, 1), node->rectangle)) {
-        quadrant_t quadrant = determine_quadrant(get_coord(fp_old, 0), node->rectangle);
+    printf("this is %d\n", determine_quadrant(old_coords, node->rectangle));
+    printf("this is %d\n", determine_quadrant(new_coords, node->rectangle));
+    if (determine_quadrant(old_coords, node->rectangle) == determine_quadrant(new_coords, node->rectangle)) {
+        quadrant_t quadrant = determine_quadrant(old_coords, node->rectangle);
             
         switch(quadrant) {
             case NE:
-                subdivide(node->NE, fp_old, fp_new);
+                subdivide(node->NE, fp_old, fp_new, new_coords, old_coords);
                 break;
             case NW:
-                subdivide(node->NW, fp_old, fp_new);
+                subdivide(node->NW, fp_old, fp_new, new_coords, old_coords);
                 break;
             case SE:
-                subdivide(node->SE, fp_old, fp_new);
+                subdivide(node->SE, fp_old, fp_new, new_coords, old_coords);
                 break;
             case SW:
-                subdivide(node->SW, fp_old, fp_new);
+                subdivide(node->SW, fp_old, fp_new, new_coords, old_coords);
                 break;   
         }
             
             
     } else {
-        switch(determine_quadrant(get_coord(fp_new, 1), node->rectangle)) {
+        switch(determine_quadrant(new_coords, node->rectangle)) {
             case NE:
-                node->NE = insert_data(node->NE, fp_old, get_coord(fp_new, 1));
+                node->NE = insert_data(node->NE, fp_old, new_coords);
                 break;
             case NW:
-                node->NW = insert_data(node->NW, fp_old, get_coord(fp_new, 1));
+                node->NW = insert_data(node->NW, fp_old, new_coords);
                 break;
             case SE:
-                node->SE = insert_data(node->SE, fp_old, get_coord(fp_new, 1));
+                node->SE = insert_data(node->SE, fp_old, new_coords);
                 break;
             case SW:
-                node->SW =insert_data(node->SW, fp_old, get_coord(fp_new, 1));
+                node->SW =insert_data(node->SW, fp_old, new_coords);
                 break;   
         }
-        printf("This is %d\n", determine_quadrant(get_coord(fp_old, 0), node->rectangle));
-        switch(determine_quadrant(get_coord(fp_old, 0), node->rectangle)) {
+
+        switch(determine_quadrant(old_coords, node->rectangle)) {
             case NW:
-                node->NW = insert_data(node->NW, fp_old, get_coord(fp_old, 0));
+                node->NW = insert_data(node->NW, fp_old, old_coords);
                 break;
             case NE:
-                node->NE = insert_data(node->NE, fp_old, get_coord(fp_old, 0));
+                node->NE = insert_data(node->NE, fp_old, old_coords);
                 break;
             case SE:
-                node->SE = insert_data(node->SE, fp_old, get_coord(fp_old, 0));
+                node->SE = insert_data(node->SE, fp_old, old_coords);
                 break;
             case SW:
-                node->SW = insert_data(node->SW, fp_old, get_coord(fp_old, 0));
+                node->SW = insert_data(node->SW, fp_old, old_coords);
                 break;   
         }
         
@@ -239,19 +245,19 @@ quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect) {
     long double centre_x = rect->bot_left.x + ((rect->top_right.x - rect->bot_left.x) / 2);
     long double centre_y = rect->bot_left.y + ((rect->top_right.y - rect->bot_left.y) / 2);
 
-    rectangle_2D_t sw, se, nw, ne;
+    rectangle_2D_t *sw, *se, *nw, *ne;
     sw = make_rect(rect->bot_left, make_point(centre_x, centre_y));
     se = make_rect(make_point(centre_x, rect->bot_left.y), make_point(rect->top_right.x, centre_y));
     nw = make_rect(make_point(rect->bot_left.x, centre_y), make_point(centre_x, rect->top_right.y));
     ne = make_rect(make_point(centre_x, centre_y), rect->top_right);
 
-    if (in_rectangle(point, &sw)) {
+    if (in_rectangle(point, sw)) {
         return SW;
-    } else if (in_rectangle(point, &se)) {
+    } else if (in_rectangle(point, se)) {
         return SE;
-    } else if (in_rectangle(point, &nw)) {
+    } else if (in_rectangle(point, nw)) {
         return NW;
-    } else if (in_rectangle(point, &ne)) {
+    } else if (in_rectangle(point, ne)) {
         return NE;
     }
     return -1;
@@ -263,13 +269,16 @@ point_2D_t make_point(long double x, long double y) {
     point_2D_t point;
     point.x = x;
     point.y = y;
+    
     return point;
 }
 
-rectangle_2D_t make_rect(point_2D_t bot_left, point_2D_t top_right) {
-    rectangle_2D_t rect;
-    rect.bot_left = bot_left;
-    rect.top_right = top_right;
+rectangle_2D_t *make_rect(point_2D_t bot_left, point_2D_t top_right) {
+    rectangle_2D_t *rect;
+    rect = (rectangle_2D_t *) malloc(sizeof(*rect));
+    assert(rect);
+    rect->bot_left = bot_left;
+    rect->top_right = top_right;
     return rect;
 }
 
