@@ -26,6 +26,9 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #define DICT3 3
 #define DICT4 4
 
+#define START 0
+#define END 1
+
 /* -- function prototypes - */
 int process_args(int argc, char *argv[]);
 
@@ -191,9 +194,22 @@ qt_node_t *get_footpath_tree(char *filename, int *num, char **arguments) {
     FILE *f = fopen(filename, "r");
     assert(f);
     /* creates empty quad tree */
-    qt_node_t *root = make_empty_tree(root_rect);
+    qt_node_t *root = create_new_node(root_rect);
 
+    /* starts reading input file */
+	skip_header_line(f);
 
+    footpath_t *fp;
+
+    while ((fp = footpath_read(f))) {
+        point_2D_t *start_coord, *end_coord;
+        start_coord = get_coord(fp, START);
+        end_coord = get_coord(fp, END);
+        /* inserts footpath pointer into quadtree */
+		root = insert_data(root, fp, start_coord);
+        root = insert_data(root, fp, end_coord);
+        (*num)++;
+    }
 
     return root;
 
