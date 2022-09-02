@@ -10,6 +10,7 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #define _QUAD_TREE_H_
 
 #include "data.h"
+#include "linked_list.h"
 
 /* - Constant definitions - */
 #define WHITE 0

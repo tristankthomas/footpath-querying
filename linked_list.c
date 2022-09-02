@@ -25,7 +25,6 @@ struct node {
 
 struct footpaths_ll {
     node_t *head;
-    node_t *foot;
 };
 
 /* ========================== Linked list functions ========================= */
@@ -37,7 +36,7 @@ footpathsll_t *make_empty_list(void) {
     /* allocates memory for linked list (2 ptrs - 16 bytes) */
     list = (footpathsll_t *) malloc(sizeof(*list));
     assert(list != NULL);
-    list->head = list->foot = NULL;
+    list->head = NULL;
 
     return list;
 }
@@ -54,11 +53,6 @@ footpathsll_t *insert_at_head(footpathsll_t *list, footpath_t *footpath) {
     new->footpath = footpath;
     new->next = list->head;
     list->head = new;
-
-    /* if first element in list */
-    if (list->foot == NULL) {
-        list->foot = new;
-    }
 
     return list;
 }

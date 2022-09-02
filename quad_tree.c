@@ -30,7 +30,7 @@ struct rectangle_2D {
 struct qt_node {
     rectangle_2D_t *rectangle;
     qt_node_t *SW, *NW, *NE, *SE;
-    footpath_t *footpath; // could make this a linked list
+    footpathsll_t *footpaths;
     point_2D_t *coords;
     int colour;
 };
@@ -39,6 +39,7 @@ enum quadrant {
     SW, NW, NE, SE
 };
 
+// will need to remove struct for ll and footpath (only here to make accessing variables easier)
 struct footpath {
     int footpath_id;
     char *address;
@@ -61,6 +62,15 @@ struct footpath {
     double end_lon;
 };
 
+struct node {
+    footpath_t *footpath;
+    node_t *next;
+};
+
+struct footpaths_ll {
+    node_t *head;
+};
+
 /* =========================== Quad tree functions ========================== */
 /* Creates an empty quadtree by allocating memory for root node */
 
@@ -68,7 +78,7 @@ qt_node_t *create_new_node(rectangle_2D_t *rect) {
     qt_node_t *new_node = NULL;
     new_node = (qt_node_t *) malloc(sizeof(*new_node));
     assert(new_node);
-    new_node->footpath = NULL;
+    new_node->footpaths = make_empty_list();
     new_node->rectangle = rect;
 
     new_node->SW = new_node->NW = new_node->NE = new_node->SE = NULL;
@@ -112,7 +122,7 @@ qt_node_t *insert_data(qt_node_t *node, footpath_t *footpath, point_2D_t *coords
     if (node->colour == WHITE) {
 
         qt_node_t *newnode = create_new_node(node->rectangle);
-        newnode->footpath = footpath;
+        newnode->footpaths = insert_at_head(newnode->footpaths, footpath);
         newnode->coords = coords;
         newnode->colour = BLACK;
         return newnode;
@@ -122,10 +132,13 @@ qt_node_t *insert_data(qt_node_t *node, footpath_t *footpath, point_2D_t *coords
     if (node->colour == BLACK) {
 
         footpath_t *new = footpath;
-        footpath_t *old = node->footpath;
+        footpath_t *old = node->footpaths->head->footpath;
         point_2D_t *new_coords = coords;
         point_2D_t *old_coords = node->coords;
-        node = subdivide(node, new, old, new_coords, old_coords); // subdivide and store rectangles to each of 4 quadrants (white nodes) (change parent node colour to grey)
+        if (new_coords->x == old_coords->x && new_coords->y == old_coords->y)
+            node->footpaths = insert_at_head(node->footpaths, footpath);
+        else 
+            node = subdivide(node, old, new, new_coords, old_coords); // subdivide and store rectangles to each of 4 quadrants (white nodes) (change parent node colour to grey)
         return node;
     }
 
@@ -155,6 +168,7 @@ qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new, po
     long double centre_x = node->rectangle->bot_left.x + ((node->rectangle->top_right.x - node->rectangle->bot_left.x) / 2);
     long double centre_y = node->rectangle->bot_left.y + ((node->rectangle->top_right.y - node->rectangle->bot_left.y) / 2);
 
+
     rectangle_2D_t *sw, *se, *nw, *ne;
     sw = make_rect(node->rectangle->bot_left, make_point(centre_x, centre_y));
     se = make_rect(make_point(centre_x, node->rectangle->bot_left.y), make_point(node->rectangle->top_right.x, centre_y));
@@ -167,7 +181,8 @@ qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new, po
     node->SW = create_new_node(sw);
 
     node->colour = GREY;
-    node->footpath = NULL;
+    node->footpaths = NULL;
+    // free ll
     node->coords = NULL;
 
     printf("this is %d\n", determine_quadrant(old_coords, node->rectangle));
