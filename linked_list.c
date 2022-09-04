@@ -23,8 +23,10 @@ struct node {
     node_t *next;
 };
 
+// maybe add counter to this linked list
 struct footpaths_ll {
     node_t *head;
+    int num_items;
 };
 
 /* ========================== Linked list functions ========================= */
@@ -37,6 +39,7 @@ footpathsll_t *make_empty_list(void) {
     list = (footpathsll_t *) malloc(sizeof(*list));
     assert(list != NULL);
     list->head = NULL;
+    list->num_items = 0;
 
     return list;
 }
@@ -53,6 +56,7 @@ footpathsll_t *insert_at_head(footpathsll_t *list, footpath_t *footpath) {
     new->footpath = footpath;
     new->next = list->head;
     list->head = new;
+    (list->num_items)++;
 
     return list;
 }
@@ -103,6 +107,32 @@ void get_sorted_array(footpathsll_t *list, node_t **arr) {
     }
 }
 
+// GENERALISE COMP FUNCTION
+void get_sorted_array2(footpathsll_t *list, footpath_t **arr) {
+
+    int num = get_array2(list, arr);
+    footpath_t *tmp;
+
+    /* performs insertion sort on array */
+    for (int i = 1; i < num; i++) {
+        for (int j = i - 1; j >= 0 && cmp_id(arr[j], arr[j + 1]) == 1; j--) {
+            tmp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = tmp;
+        }
+    }
+}
+
+
+void footpath_printarr(FILE *f, footpath_t **arr, int num_found) {
+
+    for (int i = 0; i < num_found; i++) {
+        footpath_print(f, arr[i]);
+    }
+
+
+}
+
 
 /* ========================================================================== */
 /* Produces array from linked list */
@@ -121,6 +151,22 @@ int get_array(footpathsll_t *list, node_t **arr) {
 
     return cnt - 1;
 }
+
+// CHANGE THE ONE ABOVE TO BE ARRAY FOR FOOTPATHS NOT LL NODES
+int get_array2(footpathsll_t *list, footpath_t **arr) {
+
+    node_t *curr = list->head;
+    int cnt = 0;
+       
+    /* iterates through linked list */
+    while (curr != NULL) {
+        arr[cnt++] = curr->footpath;
+        curr = curr->next;
+    }
+
+    return cnt;
+}
+
 
 /* ============================ Search functions ============================ */
 /* Linearly searches the linked list and returns the footpath based on the query */
@@ -145,6 +191,10 @@ footpath_t **linked_list_search(footpathsll_t *fps, char *query, int *num_found)
     return fps_found;
 
 }
+
+
+
+
 
 /* ========================================================================== */
 /* Finds the footpath with the grade1in value closest to the query using binary search 
@@ -201,3 +251,17 @@ footpath_t *binary_search(node_t **arr, double query, int num) {
 }
 
 /* ========================================================================== */
+
+int get_num_items(footpathsll_t *fps) {
+    return fps->num_items;
+}
+
+// void footpathsll_print(FILE *f, footpathsll_t *fps) {
+    
+// }
+
+
+// footpathsll_t *ll_append(footpathsll_t list, footpathsll_t item) {
+    
+
+// }

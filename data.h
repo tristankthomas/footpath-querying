@@ -48,6 +48,10 @@ void free_footpath(footpath_t *fp);
 
 /* Compares grade1in of two footpaths */
 int cmp_grade(footpath_t *fp1, footpath_t *fp2);
+int cmp_id(footpath_t *fp1, footpath_t *fp2);
+
+
+
 
 /* Returns the closest footpath based on grade1in value */
 footpath_t *get_closest(footpath_t *fp1, footpath_t *fp2, double value);

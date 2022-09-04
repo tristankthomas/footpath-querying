@@ -13,6 +13,7 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 
 #include "data.h"
 
+// maybe change long and lat to long doubles
 /* Single footpath structure */
 struct footpath {
     int footpath_id;
@@ -51,8 +52,8 @@ footpath_t *footpath_read(FILE *f) {
 
 	footpath_t *fp = NULL;
     int footpath_id, reads = 0;
-	double delta_z, distance, grade1in, rlmax, rlmin, start_lat, start_lon, 
-        end_lat, end_lon, mcc_id, mccid_int, statusid, streetid, street_group;
+	double delta_z, distance, grade1in, rlmax, rlmin, mcc_id, mccid_int, 
+        statusid, streetid, street_group, start_lat, start_lon, end_lat, end_lon;
 	char address[MAX_STR_LEN + 1] = "", clue_sa[MAX_STR_LEN + 1] = "", 
         asset_type[MAX_STR_LEN + 1] = "", segside[MAX_STR_LEN + 1] = "";
 
@@ -179,6 +180,8 @@ void footpaths_print(FILE *f, footpath_t **fps, int num_found) {
 
 }
 
+
+
 /* ========================================================================== */
 /* Prints a single footpath */
 void footpath_print(FILE *f, footpath_t *fp) {
@@ -187,8 +190,8 @@ void footpath_print(FILE *f, footpath_t *fp) {
             "asset_type: %s || deltaz: %.2f || distance: %.2f || "
             "grade1in: %.1f || mcc_id: %d || mccid_int: %d || rlmax: %.2f || "
             "rlmin: %.2f || segside: %s || statusid: %d || streetid: %d || "
-            "street_group: %d || start_lat: %.6f || start_lon: %.6f || "
-            "end_lat: %.6f || end_lon: %.6f || \n",
+            "street_group: %d || start_lat: %.6lf || start_lon: %.6lf || "
+            "end_lat: %.6lf || end_lon: %.6lf || \n",
             fp->footpath_id, fp->address, fp->clue_sa, fp->asset_type, fp->delta_z, 
             fp->distance, fp->grade1in, fp->mcc_id, fp->mccid_int, fp->rlmax, 
             fp->rlmin, fp->segside, fp->statusid, fp->streetid, fp->street_group, 
@@ -197,13 +200,29 @@ void footpath_print(FILE *f, footpath_t *fp) {
 }
 
 
+
+
 /* ==================== Comparison and getting functions ==================== */
 /* Compares grade1in of two footpaths */
+
+
+// GENERALISE THIS FUNCTION
 int cmp_grade(footpath_t *fp1, footpath_t *fp2) {
 
     if (fp1->grade1in == fp2->grade1in)
         return 0;
     else if (fp1->grade1in > fp2->grade1in)
+        return 1;
+    else 
+        return -1;
+
+}
+
+int cmp_id(footpath_t *fp1, footpath_t *fp2) {
+
+    if (fp1->footpath_id == fp2->footpath_id)
+        return 0;
+    else if (fp1->footpath_id > fp2->footpath_id)
         return 1;
     else 
         return -1;

@@ -17,9 +17,15 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #include "data.h"
 #include "linked_list.h"
 
+// combine these two structs some how
 struct point_2D {
     long double x;
     long double y;
+};
+
+struct pointd_2D {
+    double x;
+    double y;
 };
 
 struct rectangle_2D {
@@ -112,17 +118,18 @@ point_2D_t *get_coord(footpath_t *fp, int point_type) {
 // note: if the node is white then it is a leaf node with no data (so can insert)
 // if black then a leaf node with data (so need to recursively split up until the two points are in seperate quadrants and create new nodes)
 // if grey then need to keep going to find white or black (without creating new nodes) (grey nodes only occur after subdiving black nodes)
-qt_node_t *insert_data(qt_node_t *node, footpath_t *footpath, point_2D_t *coords) {
+qt_node_t *insert_data(qt_node_t *node, footpathsll_t *footpaths, point_2D_t *coords) {
 
 
     if (!in_rectangle(coords, node->rectangle)){
          return node;
     }
-    // WHITE (only occurs once in insersion)
+
     if (node->colour == WHITE) {
 
         qt_node_t *newnode = create_new_node(node->rectangle);
-        newnode->footpaths = insert_at_head(newnode->footpaths, footpath);
+        newnode->footpaths = footpaths;//insert_at_head(newnode->footpaths, footpath);
+
         newnode->coords = coords;
         newnode->colour = BLACK;
         return newnode;
@@ -131,12 +138,13 @@ qt_node_t *insert_data(qt_node_t *node, footpath_t *footpath, point_2D_t *coords
 
     if (node->colour == BLACK) {
 
-        footpath_t *new = footpath;
-        footpath_t *old = node->footpaths->head->footpath;
+        footpathsll_t *new = footpaths;
+        footpathsll_t *old = node->footpaths;
         point_2D_t *new_coords = coords;
         point_2D_t *old_coords = node->coords;
+
         if (new_coords->x == old_coords->x && new_coords->y == old_coords->y)
-            node->footpaths = insert_at_head(node->footpaths, footpath);
+            old = insert_at_head(old, new->head->footpath);
         else 
             node = subdivide(node, old, new, new_coords, old_coords); // subdivide and store rectangles to each of 4 quadrants (white nodes) (change parent node colour to grey)
         return node;
@@ -145,16 +153,16 @@ qt_node_t *insert_data(qt_node_t *node, footpath_t *footpath, point_2D_t *coords
     if (node->colour == GREY) {
 
         if (determine_quadrant(coords, node->rectangle) == NW) {
-            node->NW = insert_data(node->NW, footpath, coords); // if next quadrant is leaf node will either subdivide or insert
+            node->NW = insert_data(node->NW, footpaths, coords); // if next quadrant is leaf node will either subdivide or insert
 
         } else if (determine_quadrant(coords, node->rectangle) == NE) {
-            node->NE = insert_data(node->NE, footpath, coords);
+            node->NE = insert_data(node->NE, footpaths, coords);
 
         } else if (determine_quadrant(coords, node->rectangle) == SW) {
-            node->SW = insert_data(node->SW, footpath, coords);
+            node->SW = insert_data(node->SW, footpaths, coords);
 
         } else if (determine_quadrant(coords, node->rectangle) == SE) {
-            node->SE = insert_data(node->SE, footpath, coords);
+            node->SE = insert_data(node->SE, footpaths, coords);
 
         }
     }
@@ -163,7 +171,7 @@ qt_node_t *insert_data(qt_node_t *node, footpath_t *footpath, point_2D_t *coords
 
 }
 
-qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new, point_2D_t *new_coords, point_2D_t *old_coords) {
+qt_node_t *subdivide(qt_node_t *node, footpathsll_t *fps_old, footpathsll_t *fps_new, point_2D_t *new_coords, point_2D_t *old_coords) {
 
     long double centre_x = node->rectangle->bot_left.x + ((node->rectangle->top_right.x - node->rectangle->bot_left.x) / 2);
     long double centre_y = node->rectangle->bot_left.y + ((node->rectangle->top_right.y - node->rectangle->bot_left.y) / 2);
@@ -185,23 +193,23 @@ qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new, po
     // free ll
     node->coords = NULL;
 
-    printf("this is %d\n", determine_quadrant(old_coords, node->rectangle));
-    printf("this is %d\n", determine_quadrant(new_coords, node->rectangle));
+ //   printf("this is %d\n", determine_quadrant(old_coords, node->rectangle));
+ //   printf("this is %d\n", determine_quadrant(new_coords, node->rectangle));
     if (determine_quadrant(old_coords, node->rectangle) == determine_quadrant(new_coords, node->rectangle)) {
         quadrant_t quadrant = determine_quadrant(old_coords, node->rectangle);
             
         switch(quadrant) {
             case NE:
-                subdivide(node->NE, fp_old, fp_new, new_coords, old_coords);
+                subdivide(node->NE, fps_old, fps_new, new_coords, old_coords);
                 break;
             case NW:
-                subdivide(node->NW, fp_old, fp_new, new_coords, old_coords);
+                subdivide(node->NW, fps_old, fps_new, new_coords, old_coords);
                 break;
             case SE:
-                subdivide(node->SE, fp_old, fp_new, new_coords, old_coords);
+                subdivide(node->SE, fps_old, fps_new, new_coords, old_coords);
                 break;
             case SW:
-                subdivide(node->SW, fp_old, fp_new, new_coords, old_coords);
+                subdivide(node->SW, fps_old, fps_new, new_coords, old_coords);
                 break;   
         }
             
@@ -209,31 +217,31 @@ qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new, po
     } else {
         switch(determine_quadrant(new_coords, node->rectangle)) {
             case NE:
-                node->NE = insert_data(node->NE, fp_old, new_coords);
+                node->NE = insert_data(node->NE, fps_new, new_coords);
                 break;
             case NW:
-                node->NW = insert_data(node->NW, fp_old, new_coords);
+                node->NW = insert_data(node->NW, fps_new, new_coords);
                 break;
             case SE:
-                node->SE = insert_data(node->SE, fp_old, new_coords);
+                node->SE = insert_data(node->SE, fps_new, new_coords);
                 break;
             case SW:
-                node->SW =insert_data(node->SW, fp_old, new_coords);
+                node->SW =insert_data(node->SW, fps_new, new_coords);
                 break;   
         }
 
         switch(determine_quadrant(old_coords, node->rectangle)) {
             case NW:
-                node->NW = insert_data(node->NW, fp_old, old_coords);
+                node->NW = insert_data(node->NW, fps_old, old_coords);
                 break;
             case NE:
-                node->NE = insert_data(node->NE, fp_old, old_coords);
+                node->NE = insert_data(node->NE, fps_old, old_coords);
                 break;
             case SE:
-                node->SE = insert_data(node->SE, fp_old, old_coords);
+                node->SE = insert_data(node->SE, fps_old, old_coords);
                 break;
             case SW:
-                node->SW = insert_data(node->SW, fp_old, old_coords);
+                node->SW = insert_data(node->SW, fps_old, old_coords);
                 break;   
         }
         
@@ -244,6 +252,45 @@ qt_node_t *subdivide(qt_node_t *node, footpath_t *fp_old, footpath_t *fp_new, po
 
 }
 
+footpathsll_t *search_tree(qt_node_t *node, point_2D_t *query) {
+
+    if (!in_rectangle(query, node->rectangle))
+         return NULL;
+
+
+    if (node->colour == WHITE)
+        return NULL;
+
+
+    if (node->colour == BLACK)
+        return node->footpaths;
+
+
+    if (node->colour == GREY) {
+        if (determine_quadrant(query, node->rectangle) == NW) {
+            printf(" NW");
+            return search_tree(node->NW, query);
+
+        } else if (determine_quadrant(query, node->rectangle) == NE) {
+            printf(" NE");
+            return search_tree(node->NE, query);
+
+        } else if (determine_quadrant(query, node->rectangle) == SW) {
+            printf(" SW");
+            return search_tree(node->SW, query);
+
+        } else if (determine_quadrant(query, node->rectangle) == SE) {
+            printf(" SE");
+            return search_tree(node->SE, query);
+
+        }
+    }
+
+    return NULL;
+
+    
+
+}
 
 
 
@@ -280,12 +327,23 @@ quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect) {
     
 }
 
+// merge these two functions
 point_2D_t make_point(long double x, long double y) {
     point_2D_t point;
     point.x = x;
     point.y = y;
     
     return point;
+}
+
+
+point_2D_t *make_point_ptr(double x, double y) {
+    point_2D_t *point = NULL;
+    point = (point_2D_t *) malloc(sizeof(*point));
+    point->x = x;
+    point->y = y;
+    return point;
+
 }
 
 rectangle_2D_t *make_rect(point_2D_t bot_left, point_2D_t top_right) {
