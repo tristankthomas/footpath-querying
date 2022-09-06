@@ -31,13 +31,15 @@ struct footpaths_ll {
 
 /* ========================== Linked list functions ========================= */
 /* Allocates and initialises an empty linked list */
-footpathsll_t *make_empty_list(void) {
+footpathsll_t *make_empty_list() {
 
     footpathsll_t *list;
 
     /* allocates memory for linked list (2 ptrs - 16 bytes) */
+
     list = (footpathsll_t *) malloc(sizeof(*list));
     assert(list != NULL);
+
     list->head = NULL;
     list->num_items = 0;
 
@@ -84,6 +86,7 @@ void free_list(footpathsll_t *fps) {
 
     /* frees linked list */
     free(fps);
+    
 
 }
 
@@ -256,6 +259,10 @@ int get_num_items(footpathsll_t *fps) {
     return fps->num_items;
 }
 
+// int get_is_freed(footpathsll_t *fps) {
+//     return fps->is_freed;
+// }
+
 // void footpathsll_print(FILE *f, footpathsll_t *fps) {
     
 // }
@@ -264,4 +271,42 @@ int get_num_items(footpathsll_t *fps) {
 // footpathsll_t *ll_append(footpathsll_t list, footpathsll_t item) {
     
 
+// }
+
+node_t *clone(node_t* list) {
+    if (list == NULL) return NULL;
+
+    node_t *result = (node_t *) malloc(sizeof(*result));
+    result->footpath = fp_dup(list->footpath);
+    result->next = clone(list->next);
+    
+    return result;
+}
+
+footpathsll_t *clone_fp(footpathsll_t *fps) {
+    footpathsll_t *copy = make_empty_list();
+    copy->head = clone(fps->head);
+    copy->num_items = fps->num_items;
+    return copy;
+}
+
+
+// footpathsll_t *fps_dup(footpathsll_t *fps) {
+//     footpathsll_t *copy = make_empty_list();
+
+//     node_t *ccurr = copy->head;
+//     node_t *scurr = fps->head;
+
+//     /* iterate through linked list */
+//     while (scurr != NULL) {
+//         node_t *new = (node_t *) malloc(sizeof(*new));
+//         assert(new != NULL);
+//         new->footpath = fp_dup(scur->footpath);
+//         ccurr = new;
+//         /* adds footpath to array if matches query */
+//         ccurr->footpath = fp_dup(scur->footpath);
+//         ccurr->
+//         ccurr = curr->next;
+//         scurr
+//     }
 // }

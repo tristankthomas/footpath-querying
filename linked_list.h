@@ -18,7 +18,7 @@ typedef struct footpaths_ll footpathsll_t;
 
 /* -- Function prototypes - */
 /* Allocates and initialises an empty linked list */
-footpathsll_t *make_empty_list(void);
+footpathsll_t *make_empty_list();
 
 /* Inserts an element at the head of the list */
 footpathsll_t *insert_at_head(footpathsll_t *list, footpath_t *footpath);
@@ -50,5 +50,12 @@ footpathsll_t *ll_append(footpathsll_t list, footpathsll_t item);
 footpath_t *binary_search(node_t **arr, double query, int num);
 
 int get_num_items(footpathsll_t *fps);
+
+node_t *clone(node_t* list);
+
+footpathsll_t *clone_fp(footpathsll_t *fps);
+
+
+//int get_is_freed(footpathsll_t *fps);
 
 #endif

@@ -99,6 +99,7 @@ footpath_t *footpath_read(FILE *f) {
         
         
     }
+    //fp->is_freed = 0;
 
 	return fp;
 }
@@ -166,6 +167,7 @@ void free_footpath(footpath_t *fp) {
     free(fp->clue_sa);
     free(fp->asset_type);
     free(fp->segside);
+    //fp->is_freed = 1;
     free(fp);
 
 }
@@ -259,4 +261,41 @@ int cmp_addr(footpath_t *fp, char *query) {
 
 }
 
+// int get_is_freed(footpath_t *fp) {
+//     return fp->is_freed;
+// }
+
 /* ========================================================================== */
+
+
+footpath_t *fp_dup(footpath_t *fp) {
+    footpath_t *copy = NULL;
+    copy = (footpath_t *) malloc(sizeof(*fp));
+    assert(copy);
+    copy->footpath_id = fp->footpath_id;
+    copy->address = strdup(fp->address);
+    assert(copy->address);
+    copy->clue_sa = strdup(fp->clue_sa); 
+    assert(copy->clue_sa);
+    copy->asset_type = strdup(fp->asset_type);
+    assert(copy->asset_type);
+    copy->delta_z = fp->delta_z;
+    copy->grade1in = fp->grade1in;
+    copy->distance = fp->distance;
+    copy->mcc_id = fp->mcc_id;
+    copy->mccid_int = fp->mccid_int;
+    copy->rlmax = fp->rlmax;
+    copy->rlmin = fp->rlmin;
+    copy->segside = strdup(fp->segside);
+    assert(copy->segside);
+    copy->statusid = fp->statusid;
+    copy->streetid = fp->streetid;
+    copy->street_group = fp->street_group;
+    copy->start_lat = fp->start_lat;
+    copy->start_lon = fp->start_lon;
+    copy->end_lat = fp->end_lat;
+    copy->end_lon = fp->end_lon;
+
+    return copy;
+}
+

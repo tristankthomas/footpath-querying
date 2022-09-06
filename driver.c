@@ -29,12 +29,35 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #define START 0
 #define END 1
 
+struct footpath {
+    int footpath_id;
+    char *address;
+    char *clue_sa;
+    char *asset_type;
+    double delta_z;
+    double distance;
+    double grade1in;
+    int mcc_id;
+    int mccid_int;
+    double rlmax;
+    double rlmin;
+    char *segside;
+    int statusid;
+    int streetid;
+    int street_group;
+    double start_lat;
+    double start_lon;
+    double end_lat;
+    double end_lon;
+
+};
+
 /* -- function prototypes - */
 int process_args(int argc, char *argv[]);
 
 footpathsll_t *get_footpath_list(char *filename);
 
-qt_node_t *get_footpath_tree(char *filename, int *num, char **arguments);
+qt_node_t *get_footpath_tree(char *filename, char **arguments);
 
 void querying(char **arguments, FILE *input, FILE *output, 
     FILE *out_file, int dict_type);
@@ -144,11 +167,12 @@ void querying(char **arguments, FILE *input, FILE *output,
             printf("%s --> %.1f\n", query, get_grade1in(footpath_found));
 
         }
+        free_list(footpaths);
         
     } else if (dict_type == 3) {
         // at the end check if I can read directly into long double or even double instead of string
         /* creates footpath quad tree */
-        qt_node_t *quad_tree = get_footpath_tree(data_file_name, &num_fps, arguments);
+        qt_node_t *quad_tree = get_footpath_tree(data_file_name, arguments);
         footpathsll_t *footpaths_found = NULL;
         char lon_str[MAX_STR_LEN + 1] = "", lat_str[MAX_STR_LEN + 1] = "";
         double lon_query = 0.0, lat_query = 0.0;
@@ -159,18 +183,28 @@ void querying(char **arguments, FILE *input, FILE *output,
             lon_query = atof(lon_str);
             lat_query = atof(lat_str);
             point_query = make_point_ptr(lon_query, lat_query);
+
             printf("%s %s -->", lon_str, lat_str);
+            /* searches query in quadtree */
             footpaths_found = search_tree(quad_tree, point_query);
             printf("\n");
-            // could add something that this is only sorted if ll > 1
+
             footpath_t *arr[get_num_items(footpaths_found)];
+
             // make this function flexible for any attribute
             get_sorted_array2(footpaths_found, arr);
             
             fprintf(out_file, "%s %s\n", lon_str, lat_str);
             footpath_printarr(out_file, arr, get_num_items(footpaths_found));
+
+            free(point_query);
             
         }
+        
+        free_tree(quad_tree);
+        quad_tree = NULL;
+
+    } else if (dict_type == 4) {
 
     }
 
@@ -185,7 +219,8 @@ footpathsll_t *get_footpath_list(char *filename) {
 	FILE *f = fopen(filename, "r");
 	assert(f);
     /* creates empty linked list */
-	footpathsll_t *footpaths = make_empty_list();
+	footpathsll_t *footpaths = NULL;
+    footpaths = make_empty_list();
 
     /* starts reading input file */
 	skip_header_line(f);
@@ -207,7 +242,7 @@ footpathsll_t *get_footpath_list(char *filename) {
 
 /* ========================================================================== */
 /* Reads the footpath data into a quad tree based on longitudes and latitudes */
-qt_node_t *get_footpath_tree(char *filename, int *num, char **arguments) {
+qt_node_t *get_footpath_tree(char *filename, char **arguments) {
 
     rectangle_2D_t *root_rect = NULL;
     root_rect = get_root_rect(root_rect, arguments);
@@ -215,31 +250,44 @@ qt_node_t *get_footpath_tree(char *filename, int *num, char **arguments) {
     FILE *f = fopen(filename, "r");
     assert(f);
     /* creates empty quad tree */
-    qt_node_t *root = create_new_node(root_rect);
+    qt_node_t *root = NULL;
+    root = create_new_node(root, root_rect);
 
     /* starts reading input file */
 	skip_header_line(f);
 
-    footpath_t *fp;
-    footpathsll_t *fps1, *fps2;
+    footpath_t *fp1 = NULL, *fp2 = NULL;
+    footpathsll_t *fps1 = NULL, *fps2 = NULL;
 
-    while ((fp = footpath_read(f))) {
+    while ((fp1 = footpath_read(f))) {
+        /* duplicates footpath to help with freeing */
+        fp2 = fp_dup(fp1);
+
+        /* creates footpath linked lists */
         fps1 = make_empty_list();
         fps2 = make_empty_list();
-        fps1 = insert_at_head(fps1, fp);
-        fps2 = insert_at_head(fps2, fp);
+        fps1 = insert_at_head(fps1, fp1);
+        fps2 = insert_at_head(fps2, fp2);
+
+        /* creates coordinates */
         point_2D_t *start_coord, *end_coord;
-        start_coord = get_coord(fp, START);
-        end_coord = get_coord(fp, END);
+        start_coord = get_coord(fp1, START);
+        end_coord = get_coord(fp1, END);
+
         /* inserts footpath pointer into quadtree */
         root = insert_data(root, fps1, start_coord);
         root = insert_data(root, fps2, end_coord);
 		
-        
-        (*num)++;
         fps1 = NULL;
         fps2 = NULL;
+        fp1 = NULL;
+        fp2 = NULL;
+        // this might cause error
+        // free(start_coord);
+        // free(end_coord);
     }
+
+    fclose(f);
 
     return root;
 
