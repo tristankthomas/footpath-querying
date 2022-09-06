@@ -41,6 +41,13 @@ footpathsll_t *search_tree(qt_node_t *node, point_2D_t *query);
 void free_node(qt_node_t *node);
 void free_tree(qt_node_t *node);
 
+int is_black_node(qt_node_t *node);
+
+void free_rect(rectangle_2D_t *rect);
+
 point_2D_t *coord_dup(point_2D_t *coord);
 
+int rectangle_overlap(rectangle_2D_t *rect1, rectangle_2D_t *rect2);
+footpathsll_t **range_query(qt_node_t *node, rectangle_2D_t *query, footpathsll_t **fps_found, int *num_found);
+rectangle_2D_t *make_rect_ptrs(point_2D_t *bot_left, point_2D_t *top_right);
 #endif

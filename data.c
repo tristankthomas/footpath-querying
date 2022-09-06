@@ -253,6 +253,10 @@ double get_grade1in(footpath_t *fp) {
     
 }
 
+int get_id(footpath_t *fp) {
+    return fp->footpath_id;
+}
+
 /* ========================================================================== */
 /* Compares the query to the footpath address */
 int cmp_addr(footpath_t *fp, char *query) {

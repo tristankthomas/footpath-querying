@@ -41,7 +41,7 @@ int get_array(footpathsll_t *list, node_t **arr);
 
 int get_array2(footpathsll_t *list, footpath_t **arr);
 
-
+footpathsll_t **add_footpaths(footpathsll_t **fps_list, footpathsll_t *fps, int num);
 
 footpathsll_t *ll_append(footpathsll_t list, footpathsll_t item);
 
@@ -51,11 +51,17 @@ footpath_t *binary_search(node_t **arr, double query, int num);
 
 int get_num_items(footpathsll_t *fps);
 
+footpath_t **to_array(footpathsll_t **fps_list, int num, int *total);
+
 node_t *clone(node_t* list);
 
 footpathsll_t *clone_fp(footpathsll_t *fps);
 
+footpath_t **sort_array(footpath_t **arr, int num);
 
+int id_check(footpath_t **arr, int index, int num_found);
+
+void footpath_printarr2(FILE *f, footpath_t **arr, int num_found);
 //int get_is_freed(footpathsll_t *fps);
 
 #endif

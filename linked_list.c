@@ -126,6 +126,18 @@ void get_sorted_array2(footpathsll_t *list, footpath_t **arr) {
     }
 }
 
+footpath_t **sort_array(footpath_t **arr, int num) {
+    footpath_t *tmp;
+    for (int i = 1; i < num; i++) {
+        for (int j = i - 1; j >= 0 && cmp_id(arr[j], arr[j + 1]) == 1; j--) {
+            tmp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = tmp;
+        }
+    }
+    return arr;
+}
+
 
 void footpath_printarr(FILE *f, footpath_t **arr, int num_found) {
 
@@ -134,6 +146,24 @@ void footpath_printarr(FILE *f, footpath_t **arr, int num_found) {
     }
 
 
+}
+
+void footpath_printarr2(FILE *f, footpath_t **arr, int num_found) {
+
+    for (int i = 0; i < num_found; i++) {
+        if (id_check(arr, i, num_found)) footpath_print(f, arr[i]);
+    }
+}
+
+int id_check(footpath_t **arr, int index, int num_found) {
+    for (int i = index - 1; i >= 0; i--) {
+        if (index == 0)
+            return 1;
+        else if (get_id(arr[i]) == get_id(arr[index])) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 
@@ -254,25 +284,34 @@ footpath_t *binary_search(node_t **arr, double query, int num) {
 }
 
 /* ========================================================================== */
+/* Adds a footpaths to the dynamic array */
+footpathsll_t **add_footpaths(footpathsll_t **fps_list, footpathsll_t *fps, int num) {
 
+    /* static variable to keep track of footpath size (not used anywhere else) */
+    static int size = INIT_SIZE;
+
+    if (fps_list == NULL) {
+        /* allocates initial array memory */
+        fps_list = (footpathsll_t **) malloc(size * sizeof(*fps_list));
+        assert(fps_list);
+
+    } else if (num >= size) {
+        /* expands array */
+		size *= 2;
+		fps_list = realloc(fps_list, size * sizeof(*fps_list));
+		assert(fps_list);
+	}
+
+    fps_list[num - 1] = fps;
+    return fps_list;
+}
+
+/* ========================================================================== */
 int get_num_items(footpathsll_t *fps) {
     return fps->num_items;
 }
 
-// int get_is_freed(footpathsll_t *fps) {
-//     return fps->is_freed;
-// }
-
-// void footpathsll_print(FILE *f, footpathsll_t *fps) {
-    
-// }
-
-
-// footpathsll_t *ll_append(footpathsll_t list, footpathsll_t item) {
-    
-
-// }
-
+/* ========================================================================== */
 node_t *clone(node_t* list) {
     if (list == NULL) return NULL;
 
@@ -283,6 +322,7 @@ node_t *clone(node_t* list) {
     return result;
 }
 
+/* ========================================================================== */
 footpathsll_t *clone_fp(footpathsll_t *fps) {
     footpathsll_t *copy = make_empty_list();
     copy->head = clone(fps->head);
@@ -290,23 +330,32 @@ footpathsll_t *clone_fp(footpathsll_t *fps) {
     return copy;
 }
 
+/* ========================================================================== */
 
-// footpathsll_t *fps_dup(footpathsll_t *fps) {
-//     footpathsll_t *copy = make_empty_list();
+footpath_t **to_array(footpathsll_t **fps_list, int num, int *total) {
+    footpath_t **fps_found = NULL;
+    int tot = 0;
+    node_t *curr = NULL;
+    for (int i = 0; i < num; i++) {
+        curr = fps_list[i]->head;
+        while (curr != NULL) {
+            fps_found = add_footpath(fps_found, curr->footpath, ++tot);
+            curr = curr->next;
+            //num_arr++;
+        }
+        curr = NULL;
+        
+    }
+    footpath_t *tmp;
+    for (int i = 1; i < tot; i++) {
+        for (int j = i - 1; j >= 0 && cmp_id(fps_found[j], fps_found[j + 1]) == 1; j--) {
+            tmp = fps_found[j];
+            fps_found[j] = fps_found[j + 1];
+            fps_found[j + 1] = tmp;
+        }
+    }
+    *total = tot;
 
-//     node_t *ccurr = copy->head;
-//     node_t *scurr = fps->head;
+    return fps_found;
 
-//     /* iterate through linked list */
-//     while (scurr != NULL) {
-//         node_t *new = (node_t *) malloc(sizeof(*new));
-//         assert(new != NULL);
-//         new->footpath = fp_dup(scur->footpath);
-//         ccurr = new;
-//         /* adds footpath to array if matches query */
-//         ccurr->footpath = fp_dup(scur->footpath);
-//         ccurr->
-//         ccurr = curr->next;
-//         scurr
-//     }
-// }
+}

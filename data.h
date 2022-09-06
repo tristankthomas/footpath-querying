@@ -57,4 +57,6 @@ footpath_t *fp_dup(footpath_t *fp);
 /* Returns the closest footpath based on grade1in value */
 footpath_t *get_closest(footpath_t *fp1, footpath_t *fp2, double value);
 
+int get_id(footpath_t *fp);
+
 #endif

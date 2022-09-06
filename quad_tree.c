@@ -73,7 +73,7 @@ struct footpaths_ll {
     int num_items;
 };
 
-/* =========================== Quad tree functions ========================== */
+/* =========================== Insertion functions ========================== */
 /* Creates an empty quadtree by allocating memory for root node */
 
 qt_node_t *create_new_node(qt_node_t *og_node, rectangle_2D_t *rect) {
@@ -81,7 +81,6 @@ qt_node_t *create_new_node(qt_node_t *og_node, rectangle_2D_t *rect) {
     if (!og_node) {
         new_node = (qt_node_t *) malloc(sizeof(*new_node));
         assert(new_node);
-        // new_node->footpaths = make_empty_list();
         new_node->footpaths = NULL;
     } else {
         new_node = og_node;
@@ -92,30 +91,8 @@ qt_node_t *create_new_node(qt_node_t *og_node, rectangle_2D_t *rect) {
     new_node->SW = new_node->NW = new_node->NE = new_node->SE = NULL;
     new_node->colour = WHITE;
     new_node->coords = NULL;
-    //new_node->is_freed = 0;
 
     return new_node;
-}
-
-/* ========================================================================== */
-rectangle_2D_t *get_root_rect(rectangle_2D_t *rectangle, char **arguments) {
-    rectangle = (rectangle_2D_t *) malloc(sizeof(*rectangle));
-    rectangle->bot_left.x = strtold(arguments[4], NULL);
-    rectangle->bot_left.y = strtold(arguments[5], NULL);
-    rectangle->top_right.x = strtold(arguments[6], NULL);
-    rectangle->top_right.y = strtold(arguments[7], NULL);
-    return rectangle;
-}
-
-/* ========================================================================== */
-point_2D_t *get_coord(footpath_t *fp, int point_type) {
-    point_2D_t *coord = NULL;
-    coord = (point_2D_t *) malloc(sizeof(*coord));
-    assert(coord);
-    coord->x = (point_type) ? fp->end_lon : fp->start_lon;
-    coord->y = (point_type) ? fp->end_lat : fp->start_lat;
-
-    return coord;
 }
 
 
@@ -295,7 +272,7 @@ qt_node_t *subdivide(qt_node_t *node, footpathsll_t *fps_old, footpathsll_t *fps
 }
 
 
-/* ========================================================================== */
+/* ========================== Point query functions ========================= */
 footpathsll_t *search_tree(qt_node_t *node, point_2D_t *query) {
 
     /* checks to see if query is within bounds and is in quadtree */
@@ -332,38 +309,8 @@ footpathsll_t *search_tree(qt_node_t *node, point_2D_t *query) {
 
 }
 
-void free_tree(qt_node_t *node) {
-    if (!node) {
-        return;
-    }
 
-    free_tree(node->NE);
-    free_tree(node->NW);
-    free_tree(node->SE);
-    free_tree(node->SW);
-    free_node(node);
-        
-
-}
-
-
-void free_node(qt_node_t *node) {
-    free(node->rectangle);
-    node->rectangle = NULL;
-    if (node->footpaths != NULL) {
-        free_list(node->footpaths);
-        node->footpaths = NULL;
-    }
-    if (node->coords != NULL) {
-        free(node->coords);
-        node->coords = NULL;
-    }
-    
-    
-    free(node);
-    
-}
-
+/* ========================================================================== */
 // check that the point lies in the coords and return true if so
 int in_rectangle(point_2D_t *point, rectangle_2D_t *rect) {
     return point->x <= rect->top_right.x && point->x > rect->bot_left.x &&
@@ -414,6 +361,171 @@ quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect) {
     
 }
 
+
+/* ========================== Range query functions ========================= */
+footpathsll_t **range_query(qt_node_t *node, rectangle_2D_t *query, footpathsll_t **fps_found, int *num_found) {
+    //static int is_found = 0;
+
+    if (node->colour == BLACK && in_rectangle(node->coords, query)) {
+        fps_found = add_footpaths(fps_found, node->footpaths, ++(*num_found));
+        //is_found = 1;
+        return fps_found;
+    }
+
+    if (node->colour == BLACK && !in_rectangle(node->coords, query)) {
+        //is_found = 1;
+        return fps_found;
+    }
+
+    if (node->colour == WHITE) {
+        //is_found = 0;
+        return fps_found;
+    }
+
+    if (node->colour == GREY && rectangle_overlap(node->rectangle, query)) {
+        if (rectangle_overlap(node->SW->rectangle, query)) {
+            if (is_black_node(node->SW)) 
+                printf(" SW");
+            fps_found = range_query(node->SW, query, fps_found, num_found);
+
+        }
+
+        if (rectangle_overlap(node->NW->rectangle, query)) {
+            if (is_black_node(node->NW)) 
+                printf(" NW");
+            fps_found = range_query(node->NW, query, fps_found, num_found);
+
+        }
+        if (rectangle_overlap(node->NE->rectangle, query)) {
+            if (is_black_node(node->NE)) 
+                printf(" NE");
+            fps_found = range_query(node->NE, query, fps_found, num_found);
+
+        } 
+
+        if (rectangle_overlap(node->SE->rectangle, query)) {
+            if (is_black_node(node->SE)) 
+                printf(" SE");
+            fps_found = range_query(node->SE, query, fps_found, num_found);
+
+        }
+
+    }
+    //is_found = 0;
+
+    return fps_found;
+
+    
+}
+
+int is_black_node(qt_node_t *node) {
+    static int is_black = 0;
+    static int count = 0;
+
+    if (node == NULL) {
+        return 0;
+    }
+
+    if (node->colour == BLACK) {
+        if (count == 0) {
+            is_black = 0;
+            return 1;
+        }
+        is_black = 1;
+        return 1;
+    }
+
+    is_black_node(node->NE);
+    count = 1;
+    is_black_node(node->NW);
+    count = 1;
+    is_black_node(node->SE);
+    count = 1;
+    is_black_node(node->SW);
+    count = 1;
+    
+    if (is_black == 1) {
+        is_black = 0;
+        count = 0;
+        return 1;
+    }
+    count = 0;
+    return 0;
+}
+
+
+
+int rectangle_overlap(rectangle_2D_t *rect1, rectangle_2D_t *rect2) {
+    /* overlap logic (allowing overlap on border) */
+
+    return !((rect2->bot_left.x > rect1->top_right.x) || (rect1->bot_left.x > rect2->top_right.x) ||
+            (rect2->bot_left.y > rect1->top_right.y) || (rect1->bot_left.y > rect2->top_right.y));
+
+}
+
+
+
+/* ============================= Free functions ============================= */
+void free_tree(qt_node_t *node) {
+    if (!node) {
+        return;
+    }
+
+    free_tree(node->NE);
+    free_tree(node->NW);
+    free_tree(node->SE);
+    free_tree(node->SW);
+    free_node(node);
+    
+}
+
+
+void free_node(qt_node_t *node) {
+    free(node->rectangle);
+    node->rectangle = NULL;
+    if (node->footpaths != NULL) {
+        free_list(node->footpaths);
+        node->footpaths = NULL;
+    }
+    if (node->coords != NULL) {
+        free(node->coords);
+        node->coords = NULL;
+    }
+    
+    
+    free(node);
+    
+}
+
+// void free_rect(rectangle_2D_t *rect) {
+//     free(rect->top_right);
+//     free(rect->bot_left);
+//     free(rect);
+// }
+
+
+/* ===================== Creating and cloning functions ===================== */
+rectangle_2D_t *get_root_rect(rectangle_2D_t *rectangle, char **arguments) {
+    rectangle = (rectangle_2D_t *) malloc(sizeof(*rectangle));
+    rectangle->bot_left.x = strtold(arguments[4], NULL);
+    rectangle->bot_left.y = strtold(arguments[5], NULL);
+    rectangle->top_right.x = strtold(arguments[6], NULL);
+    rectangle->top_right.y = strtold(arguments[7], NULL);
+    return rectangle;
+}
+
+/* ========================================================================== */
+point_2D_t *get_coord(footpath_t *fp, int point_type) {
+    point_2D_t *coord = NULL;
+    coord = (point_2D_t *) malloc(sizeof(*coord));
+    assert(coord);
+    coord->x = (point_type) ? fp->end_lon : fp->start_lon;
+    coord->y = (point_type) ? fp->end_lat : fp->start_lat;
+
+    return coord;
+}
+
+
 /* ========================================================================== */
 // merge these two functions
 point_2D_t make_point(long double x, long double y) {
@@ -441,6 +553,15 @@ rectangle_2D_t *make_rect(point_2D_t bot_left, point_2D_t top_right) {
     assert(rect);
     rect->bot_left = bot_left;
     rect->top_right = top_right;
+    return rect;
+}
+
+rectangle_2D_t *make_rect_ptrs(point_2D_t *bot_left, point_2D_t *top_right) {
+    rectangle_2D_t *rect = NULL;
+    rect = (rectangle_2D_t *) malloc(sizeof(*rect));
+    assert(rect);
+    rect->bot_left = *bot_left;
+    rect->top_right = *top_right;
     return rect;
 }
 

@@ -1,6 +1,6 @@
 /* ------------------------ 
 Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
-10/08/2022
+10/08/2022 (NOTE: This template was taken from assignment 1 also created by Tristan Thomas)
 *
 * driver.c: Contains the main function and functions not specific to the data
 *           and the data structures.
@@ -8,7 +8,7 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 *
 * The overall format and structure of this program was inspired by the qStud
 * program from workshops W1-W4.
-*
+* 
  ------------------------ */
 
 #include <stdio.h>
@@ -171,12 +171,15 @@ void querying(char **arguments, FILE *input, FILE *output,
         
     } else if (dict_type == 3) {
         // at the end check if I can read directly into long double or even double instead of string
-        /* creates footpath quad tree */
-        qt_node_t *quad_tree = get_footpath_tree(data_file_name, arguments);
+       
         footpathsll_t *footpaths_found = NULL;
         char lon_str[MAX_STR_LEN + 1] = "", lat_str[MAX_STR_LEN + 1] = "";
         double lon_query = 0.0, lat_query = 0.0;
         point_2D_t *point_query;
+
+        /* creates footpath quad tree */
+        qt_node_t *quad_tree = get_footpath_tree(data_file_name, arguments);
+
         while (fscanf(input, "%s %s", lon_str, lat_str) == 2) {
 
             /* converts strings query to double */
@@ -206,9 +209,46 @@ void querying(char **arguments, FILE *input, FILE *output,
 
     } else if (dict_type == 4) {
 
-    }
+        footpathsll_t **footpaths_found = NULL;
+        int num_lists_found, total;
+        char rlon_str[MAX_STR_LEN + 1] = "", tlat_str[MAX_STR_LEN + 1] = "", 
+            llon_str[MAX_STR_LEN + 1] = "", blat_str[MAX_STR_LEN + 1] = "";
+        long double right_lon, top_lat, left_lon, bot_lat;
+        point_2D_t *bot_left, *top_right;
+        rectangle_2D_t *query;
+        /* creates footpath quad tree */
+        qt_node_t *quad_tree = get_footpath_tree(data_file_name, arguments);
+        footpath_t **arr = NULL;
 
-    
+        while(fscanf(input, "%s %s %s %s", llon_str, blat_str, rlon_str, tlat_str) == 4) {
+
+            /* converts string query to double */
+            num_lists_found = 0;
+            total = 0;
+            left_lon = strtold(llon_str, NULL);
+            bot_lat = strtold(blat_str, NULL);
+            right_lon = strtold(rlon_str, NULL);
+            top_lat = strtold(tlat_str, NULL);
+            bot_left = make_point_ptr(left_lon, bot_lat);
+            top_right = make_point_ptr(right_lon, top_lat);
+            query = make_rect_ptrs(bot_left, top_right);
+            printf("%s %s %s %s -->", llon_str, blat_str, rlon_str, tlat_str);
+            footpaths_found = range_query(quad_tree, query, footpaths_found, &num_lists_found);
+            printf("\n");
+            arr = to_array(footpaths_found, num_lists_found, &total);
+            //arr = sort_array(arr, num_found);
+            fprintf(out_file, "%s %s %s %s\n", llon_str, blat_str, rlon_str, tlat_str);
+            footpath_printarr2(out_file, arr, total);
+            free(top_right);
+            free(bot_left);
+            free(query);
+            // free footpath array and linked list array
+            query = NULL;
+            arr = NULL;
+            footpaths_found = NULL;
+        }
+
+    }
 
 }
 
@@ -282,9 +322,6 @@ qt_node_t *get_footpath_tree(char *filename, char **arguments) {
         fps2 = NULL;
         fp1 = NULL;
         fp2 = NULL;
-        // this might cause error
-        // free(start_coord);
-        // free(end_coord);
     }
 
     fclose(f);
