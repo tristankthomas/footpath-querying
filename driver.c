@@ -242,11 +242,17 @@ void querying(char **arguments, FILE *input, FILE *output,
             free(top_right);
             free(bot_left);
             free(query);
+
+            free(footpaths_found);
+            free(arr);
+
             // free footpath array and linked list array
             query = NULL;
             arr = NULL;
             footpaths_found = NULL;
         }
+        free_tree(quad_tree);
+        quad_tree = NULL;
 
     }
 
