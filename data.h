@@ -36,8 +36,10 @@ int read_string(FILE *f, char *str);
 /* Returns a specified footpath variable */
 double get_fp_coord(footpath_t *fp, int type);
 
+/* Returns ID attribute */
 int get_id(footpath_t *fp);
 
+/* Returns grade1in attribute */
 double get_grade1in(footpath_t *fp);
 
 /* Compares the query to the footpath address */
@@ -58,8 +60,10 @@ void free_footpath(footpath_t *fp);
 /* Compares grade1in of two footpaths */
 int cmp_grade(footpath_t *fp1, footpath_t *fp2);
 
+/* Returns ID attribute */
 int cmp_id(footpath_t *fp1, footpath_t *fp2);
 
+/* Duplicates a footpath */
 footpath_t *fp_dup(footpath_t *fp);
 
 /* Returns the closest footpath based on grade1in value */

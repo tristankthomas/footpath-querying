@@ -100,7 +100,6 @@ footpath_t *footpath_read(FILE *f) {
         
         
     }
-    //fp->is_freed = 0;
 
 	return fp;
 }
@@ -133,32 +132,6 @@ int read_string(FILE *f, char *str) {
     return 0;
 
 }
-
-
-
-/* ========================================================================== */
-/* Adds a footpath to the dynamic array */
-footpath_t **add_footpath(footpath_t **fps, footpath_t *fp, int num) {
-
-    /* static variable to keep track of footpath size (not used anywhere else) */
-    static int size = INIT_SIZE;
-
-    if (fps == NULL) {
-        /* allocates initial array memory */
-        fps = (footpath_t **) malloc(size * sizeof(*fps));
-        assert(fps);
-
-    } else if (num >= size) {
-        /* expands array */
-		size *= 2;
-		fps = realloc(fps, size * sizeof(*fps));
-		assert(fps);
-	}
-
-    fps[num - 1] = fp;
-    return fps;
-}
-
 
 /* ========================================================================== */
 /* Frees the allocated footpath memory including strings */
@@ -204,6 +177,29 @@ void footpath_print(FILE *f, footpath_t *fp) {
 
 
 
+/* ============================= Array function ============================= */
+/* Adds a footpath to the dynamic array */
+footpath_t **add_footpath(footpath_t **fps, footpath_t *fp, int num) {
+
+    /* static variable to keep track of footpath size (not used anywhere else) */
+    static int size = INIT_SIZE;
+
+    if (fps == NULL) {
+        /* allocates initial array memory */
+        fps = (footpath_t **) malloc(size * sizeof(*fps));
+        assert(fps);
+
+    } else if (num >= size) {
+        /* expands array */
+		size *= 2;
+		fps = realloc(fps, size * sizeof(*fps));
+		assert(fps);
+	}
+
+    fps[num - 1] = fp;
+    return fps;
+}
+
 
 /* ==================== Comparison and getting functions ==================== */
 /* Compares grade1in of two footpaths */
@@ -246,6 +242,7 @@ footpath_t *get_closest(footpath_t *fp1, footpath_t *fp2, double value) {
 }
 
 /* ========================================================================== */
+/* Returns grade1in attribute */
 double get_grade1in(footpath_t *fp) {
 
     return fp->grade1in;
@@ -253,6 +250,7 @@ double get_grade1in(footpath_t *fp) {
 }
 
 /* ========================================================================== */
+/* Returns ID attribute */
 int get_id(footpath_t *fp) {
 
     return fp->footpath_id;
@@ -289,6 +287,7 @@ int cmp_addr(footpath_t *fp, char *query) {
 /* ========================================================================== */
 /* Duplicates a footpath */
 footpath_t *fp_dup(footpath_t *fp) {
+
     footpath_t *copy = NULL;
     copy = (footpath_t *) malloc(sizeof(*fp));
     assert(copy);

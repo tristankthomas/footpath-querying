@@ -90,7 +90,8 @@ void free_list(footpathsll_t *fps) {
 
 
 /* ========================= Sorted array functions ========================= */
-/* Produces an array from the linked list and sorts it using insertion sort.
+/* Produces an array from the linked list and sorts it using insertion sort from 
+ * a given sorting function.
  * The insertion sort component was adapted from Alistair Moffat textbook
  * chapter 7. */
 void get_sorted_array(footpathsll_t *list, footpath_t **arr, int (*cmp) (footpath_t *, footpath_t *)) {
@@ -109,38 +110,6 @@ void get_sorted_array(footpathsll_t *list, footpath_t **arr, int (*cmp) (footpat
 }
 
 /* ========================================================================== */
-void print_array(FILE *f, footpath_t **arr, int num_found) {
-
-    for (int i = 0; i < num_found; i++) {
-        footpath_print(f, arr[i]);
-    }
-
-
-}
-
-/* ========================================================================== */
-void print_array_no_dup(FILE *f, footpath_t **arr, int num_found) {
-
-    for (int i = 0; i < num_found; i++) {
-        if (id_check(arr, i, num_found)) footpath_print(f, arr[i]);
-    }
-}
-
-/* ========================================================================== */
-/* Checks the array for duplicate footpaths */
-int id_check(footpath_t **arr, int index, int num_found) {
-    for (int i = index - 1; i >= 0; i--) {
-        if (index == 0)
-            return 1;
-        else if (get_id(arr[i]) == get_id(arr[index])) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-
-/* ========================================================================== */
 /* Produces array from linked list */
 int get_array(footpathsll_t *list, footpath_t **arr) {
 
@@ -154,6 +123,84 @@ int get_array(footpathsll_t *list, footpath_t **arr) {
     }
 
     return cnt;
+}
+
+
+/* ========================================================================== */
+/* Prints the array of footpaths */
+void print_array(FILE *f, footpath_t **arr, int num_found) {
+
+    for (int i = 0; i < num_found; i++) {
+        footpath_print(f, arr[i]);
+    }
+
+
+}
+
+/* ========================================================================== */
+/* Prints the array of footpaths ignoring duplicate footpaths */
+void print_array_no_dup(FILE *f, footpath_t **arr, int num_found) {
+
+    for (int i = 0; i < num_found; i++) {
+        if (id_check(arr, i, num_found)) footpath_print(f, arr[i]);
+    }
+}
+
+/* ========================================================================== */
+/* Checks the array for duplicate footpaths */
+int id_check(footpath_t **arr, int index, int num_found) {
+
+    /* checks behind the given index and returns true if no duplicates */
+    for (int i = index - 1; i >= 0; i--) {
+
+        if (index == 0)
+            return 1;
+
+        else if (get_id(arr[i]) == get_id(arr[index])) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+
+/* ========================================================================== */
+/* Converts the list of linked lists to an array and sorts it */
+footpath_t **to_array(footpathsll_t **fps_list, int num, int *total) {
+
+    footpath_t **fps_found = NULL;
+    footpath_t *tmp;
+    int tot = 0;
+    node_t *curr = NULL;
+
+    /* iterates through array of linked lists */
+    for (int i = 0; i < num; i++) {
+        curr = fps_list[i]->head;
+
+        /* for each linked list adds all footpaths to new dynamic array */
+        while (curr != NULL) {
+            fps_found = add_footpath(fps_found, curr->footpath, ++tot);
+            curr = curr->next;
+        }
+        curr = NULL;
+        
+    }
+    
+    /* sorts this new dynamic array by footpath ID */
+    for (int i = 1; i < tot; i++) {
+
+        for (int j = i - 1; j >= 0 && cmp_id(fps_found[j], fps_found[j + 1]) == 1; j--) {
+            tmp = fps_found[j];
+            fps_found[j] = fps_found[j + 1];
+            fps_found[j + 1] = tmp;
+        }
+    }
+    
+    *total = tot;
+
+    return fps_found;
+
 }
 
 
@@ -180,9 +227,6 @@ footpath_t **linked_list_search(footpathsll_t *fps, char *query, int *num_found)
     return fps_found;
 
 }
-
-
-
 
 
 /* ========================================================================== */
@@ -240,7 +284,7 @@ footpath_t *binary_search(footpath_t **arr, double query, int num) {
 }
 
 /* ========================================================================== */
-/* Adds a footpaths to the dynamic array */
+/* Adds a footpaths linked list to the dynamic array */
 footpathsll_t **add_footpaths(footpathsll_t **fps_list, footpathsll_t *fps, int num) {
 
     /* static variable to keep track of footpath size (not used anywhere else) */
@@ -262,7 +306,7 @@ footpathsll_t **add_footpaths(footpathsll_t **fps_list, footpathsll_t *fps, int 
     return fps_list;
 }
 
-/* ========================================================================== */
+/* ====================== Getting and cloning functions ===================== */
 /* Returns the number of items a linked list has */
 int get_num_items(footpathsll_t *fps) {
 
@@ -278,56 +322,31 @@ footpath_t *get_footpath_head(footpathsll_t *fps) {
 }
 
 /* ========================================================================== */
-/* Clones a given linked list node */
-node_t *clone(node_t* list) {
-    if (list == NULL) return NULL;
+/* Clones a given linked list recursively */
+node_t *clone_list(node_t* list) {
 
+    if (list == NULL) 
+        return NULL;
+
+    /* creates node and assign og to it and repeats until NULL reached */
     node_t *result = (node_t *) malloc(sizeof(*result));
     result->footpath = fp_dup(list->footpath);
-    result->next = clone(list->next);
+    result->next = clone_list(list->next);
     
     return result;
 }
 
 /* ========================================================================== */
-/* Clones a given linked list */
+/* Clones a given footpath linked list */
 footpathsll_t *clone_fp(footpathsll_t *fps) {
 
+    /* makes copy linked list */
     footpathsll_t *copy = make_empty_list();
-    copy->head = clone(fps->head);
+    copy->head = clone_list(fps->head);
     copy->num_items = fps->num_items;
     return copy;
 }
 
-/* ========================================================================== */
-/* Converts the list of linked lists to an array and sorts it */
-footpath_t **to_array(footpathsll_t **fps_list, int num, int *total) {
 
-    footpath_t **fps_found = NULL;
-    int tot = 0;
-    node_t *curr = NULL;
-    for (int i = 0; i < num; i++) {
-        curr = fps_list[i]->head;
-        while (curr != NULL) {
-            fps_found = add_footpath(fps_found, curr->footpath, ++tot);
-            curr = curr->next;
-            //num_arr++;
-        }
-        curr = NULL;
-        
-    }
-    footpath_t *tmp;
-    for (int i = 1; i < tot; i++) {
-        for (int j = i - 1; j >= 0 && cmp_id(fps_found[j], fps_found[j + 1]) == 1; j--) {
-            tmp = fps_found[j];
-            fps_found[j] = fps_found[j + 1];
-            fps_found[j + 1] = tmp;
-        }
-    }
-    *total = tot;
-
-    return fps_found;
-
-}
 
 /* ========================================================================== */

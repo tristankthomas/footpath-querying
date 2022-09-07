@@ -32,29 +32,38 @@ void free_list(footpathsll_t *fps);
 /* Produces an array from the linked list and sorts it using insertion sort. */
 void get_sorted_array(footpathsll_t *list, footpath_t **arr, int (*cmp) (footpath_t *, footpath_t *));
 
+/* Prints the array of footpaths */
 void print_array(FILE *f, footpath_t **arr, int num_found);
 
 /* Produces array from linked list */
 int get_array(footpathsll_t *list, footpath_t **arr);
 
+/* Adds a footpaths linked list to the dynamic array */
 footpathsll_t **add_footpaths(footpathsll_t **fps_list, footpathsll_t *fps, int num);
 
 /* Finds the footpath with the grade1in value closest to the query using binary search 
- *   of the sorted array */
+ * of the sorted array */
 footpath_t *binary_search(footpath_t **arr, double query, int num);
 
+/* Returns the number of items a linked list has */
 int get_num_items(footpathsll_t *fps);
 
+/* Converts the list of linked lists to an array and sorts it */
 footpath_t **to_array(footpathsll_t **fps_list, int num, int *total);
 
-node_t *clone(node_t* list);
+/* Clones a given linked list recursively */
+node_t *clone_list(node_t* list);
 
+/* Returns the head footpath of a footpath linked list */
 footpath_t *get_footpath_head(footpathsll_t *fps);
 
+/* Clones a given footpath linked list */
 footpathsll_t *clone_fp(footpathsll_t *fps);
 
+/* Checks the array for duplicate footpaths */
 int id_check(footpath_t **arr, int index, int num_found);
 
+/* Prints the array of footpaths ignoring duplicate footpaths */
 void print_array_no_dup(FILE *f, footpath_t **arr, int num_found);
 
 #endif

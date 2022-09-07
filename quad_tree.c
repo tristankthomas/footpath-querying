@@ -17,7 +17,7 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #include "data.h"
 #include "linked_list.h"
 
-
+/* Quad tree structure */
 struct point_2D {
     long double x;
     long double y;
@@ -36,6 +36,7 @@ struct qt_node {
     int colour;
 };
 
+/* Enum containing all possible quadrants */
 enum quadrant {
     SW, NW, NE, SE
 };
@@ -43,7 +44,6 @@ enum quadrant {
 
 /* =========================== Insertion functions ========================== */
 /* Creates an empty quadtree by allocating memory for root node */
-
 qt_node_t *create_new_node(qt_node_t *og_node, rectangle_2D_t *rect) {
     qt_node_t *new_node = NULL;
     if (!og_node) {
@@ -298,15 +298,18 @@ int in_rectangle(point_2D_t *point, rectangle_2D_t *rect) {
 /* Finds which quadrant of a rectangle region a point lies in */
 quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect) {
 
+    /* defines centre of givern quadrant */
     long double centre_x = rect->bot_left.x + ((rect->top_right.x - rect->bot_left.x) / 2);
     long double centre_y = rect->bot_left.y + ((rect->top_right.y - rect->bot_left.y) / 2);
 
+    /* creates 4 rectangles from the given quadrant */
     rectangle_2D_t *sw, *se, *nw, *ne;
     sw = make_rect(rect->bot_left, make_point(centre_x, centre_y));
     se = make_rect(make_point(centre_x, rect->bot_left.y), make_point(rect->top_right.x, centre_y));
     nw = make_rect(make_point(rect->bot_left.x, centre_y), make_point(centre_x, rect->top_right.y));
     ne = make_rect(make_point(centre_x, centre_y), rect->top_right);
 
+    /* checks to see which quadrant the point lies in */
     if (in_rectangle(point, sw)) {
         free(sw); free(se); free(nw); free(ne);
         return SW;
@@ -333,17 +336,21 @@ quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect) {
 /* Searches the quadtree for a region and returns all footpath linked lists in an array */
 footpathsll_t **range_query(qt_node_t *node, rectangle_2D_t *query, footpathsll_t **fps_found, int *num_found) {
 
+    /* if leaf node containing fps whose point is in query region */
     if (node->colour == BLACK && in_rectangle(node->coords, query)) {
         fps_found = add_footpaths(fps_found, node->footpaths, ++(*num_found));
         return fps_found;
     }
 
+    /* if point is not in query region */
     if (node->colour == BLACK && !in_rectangle(node->coords, query)) {
         return fps_found;
     }
 
-
+    /* if node rectangle coords overlap with query region then pursue deeper */
     if (node->colour == GREY && rectangle_overlap(node->rectangle, query)) {
+
+        /* if any of nodes children overlap whose nodes are not empty the recurse */
         if (rectangle_overlap(node->SW->rectangle, query) && node->SW->colour != WHITE) {
 
             printf(" SW");
@@ -383,6 +390,7 @@ footpathsll_t **range_query(qt_node_t *node, rectangle_2D_t *query, footpathsll_
 /* ========================================================================== */
 /* Checks if two rectangle regions overlap */
 int rectangle_overlap(rectangle_2D_t *rect1, rectangle_2D_t *rect2) {
+
     /* overlap logic (allowing overlap on border) */
     return !((rect2->bot_left.x > rect1->top_right.x) || (rect1->bot_left.x > rect2->top_right.x) ||
             (rect2->bot_left.y > rect1->top_right.y) || (rect1->bot_left.y > rect2->top_right.y));
@@ -393,6 +401,7 @@ int rectangle_overlap(rectangle_2D_t *rect1, rectangle_2D_t *rect2) {
 /* Frees the whole quadtree */
 void free_tree(qt_node_t *node) {
 
+    /* post order traversal to free tree from leaves upwards */
     if (!node) {
         return;
     }
@@ -409,6 +418,7 @@ void free_tree(qt_node_t *node) {
 /* Frees a single quadtree node */
 void free_node(qt_node_t *node) {
 
+    /* frees all components of node if not null */
     free(node->rectangle);
     node->rectangle = NULL;
 
