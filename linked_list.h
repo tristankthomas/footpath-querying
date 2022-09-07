@@ -30,24 +30,18 @@ footpath_t **linked_list_search(footpathsll_t *fps, char *query, int *num_found)
 void free_list(footpathsll_t *fps);
 
 /* Produces an array from the linked list and sorts it using insertion sort. */
-void get_sorted_array(footpathsll_t *list, node_t **arr);
-// GENERALISE COMP FUNCTION
-void get_sorted_array2(footpathsll_t *list, footpath_t **arr);
+void get_sorted_array(footpathsll_t *list, footpath_t **arr, int (*cmp) (footpath_t *, footpath_t *));
 
-void footpath_printarr(FILE *f, footpath_t **arr, int num_found);
+void print_array(FILE *f, footpath_t **arr, int num_found);
 
 /* Produces array from linked list */
-int get_array(footpathsll_t *list, node_t **arr);
-
-int get_array2(footpathsll_t *list, footpath_t **arr);
+int get_array(footpathsll_t *list, footpath_t **arr);
 
 footpathsll_t **add_footpaths(footpathsll_t **fps_list, footpathsll_t *fps, int num);
 
-footpathsll_t *ll_append(footpathsll_t list, footpathsll_t item);
-
 /* Finds the footpath with the grade1in value closest to the query using binary search 
  *   of the sorted array */
-footpath_t *binary_search(node_t **arr, double query, int num);
+footpath_t *binary_search(footpath_t **arr, double query, int num);
 
 int get_num_items(footpathsll_t *fps);
 
@@ -55,13 +49,12 @@ footpath_t **to_array(footpathsll_t **fps_list, int num, int *total);
 
 node_t *clone(node_t* list);
 
-footpathsll_t *clone_fp(footpathsll_t *fps);
+footpath_t *get_footpath_head(footpathsll_t *fps);
 
-footpath_t **sort_array(footpath_t **arr, int num);
+footpathsll_t *clone_fp(footpathsll_t *fps);
 
 int id_check(footpath_t **arr, int index, int num_found);
 
-void footpath_printarr2(FILE *f, footpath_t **arr, int num_found);
-//int get_is_freed(footpathsll_t *fps);
+void print_array_no_dup(FILE *f, footpath_t **arr, int num_found);
 
 #endif

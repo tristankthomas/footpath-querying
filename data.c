@@ -13,7 +13,6 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 
 #include "data.h"
 
-// maybe change long and lat to long doubles
 /* Single footpath structure */
 struct footpath {
     int footpath_id;
@@ -42,7 +41,9 @@ struct footpath {
 /* Skips the first line of the input data file.
  * This function was adapted from the qStud program in workshops W1-W4 */
 void skip_header_line(FILE *f) {
+
     while (fgetc(f) != '\n');
+    
 }
 
 
@@ -167,7 +168,7 @@ void free_footpath(footpath_t *fp) {
     free(fp->clue_sa);
     free(fp->asset_type);
     free(fp->segside);
-    //fp->is_freed = 1;
+
     free(fp);
 
 }
@@ -206,9 +207,6 @@ void footpath_print(FILE *f, footpath_t *fp) {
 
 /* ==================== Comparison and getting functions ==================== */
 /* Compares grade1in of two footpaths */
-
-
-// GENERALISE THIS FUNCTION
 int cmp_grade(footpath_t *fp1, footpath_t *fp2) {
 
     if (fp1->grade1in == fp2->grade1in)
@@ -220,6 +218,8 @@ int cmp_grade(footpath_t *fp1, footpath_t *fp2) {
 
 }
 
+/* ========================================================================== */
+/* Compares footpath ID of two footpaths */
 int cmp_id(footpath_t *fp1, footpath_t *fp2) {
 
     if (fp1->footpath_id == fp2->footpath_id)
@@ -246,15 +246,36 @@ footpath_t *get_closest(footpath_t *fp1, footpath_t *fp2, double value) {
 }
 
 /* ========================================================================== */
-/* Returns the 'grade1in' footpath variable */
 double get_grade1in(footpath_t *fp) {
 
     return fp->grade1in;
-    
+
 }
 
+/* ========================================================================== */
 int get_id(footpath_t *fp) {
+
     return fp->footpath_id;
+
+}
+
+/* ========================================================================== */
+/* Returns a value from footpath based on type */
+double get_fp_coord(footpath_t *fp, int type) {
+
+    switch(type) {
+
+        case START_LON:
+            return fp->start_lon;
+        case START_LAT:
+            return fp->start_lat;
+        case END_LON:
+            return fp->end_lon;
+        case END_LAT:
+            return fp->end_lat;
+    
+    }
+    return 0.0;
 }
 
 /* ========================================================================== */
@@ -265,13 +286,8 @@ int cmp_addr(footpath_t *fp, char *query) {
 
 }
 
-// int get_is_freed(footpath_t *fp) {
-//     return fp->is_freed;
-// }
-
 /* ========================================================================== */
-
-
+/* Duplicates a footpath */
 footpath_t *fp_dup(footpath_t *fp) {
     footpath_t *copy = NULL;
     copy = (footpath_t *) malloc(sizeof(*fp));
@@ -303,3 +319,4 @@ footpath_t *fp_dup(footpath_t *fp) {
     return copy;
 }
 
+/* ========================================================================== */

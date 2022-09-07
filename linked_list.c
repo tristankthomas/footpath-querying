@@ -23,7 +23,6 @@ struct node {
     node_t *next;
 };
 
-// maybe add counter to this linked list
 struct footpaths_ll {
     node_t *head;
     int num_items;
@@ -36,7 +35,6 @@ footpathsll_t *make_empty_list() {
     footpathsll_t *list;
 
     /* allocates memory for linked list (2 ptrs - 16 bytes) */
-
     list = (footpathsll_t *) malloc(sizeof(*list));
     assert(list != NULL);
 
@@ -95,30 +93,14 @@ void free_list(footpathsll_t *fps) {
 /* Produces an array from the linked list and sorts it using insertion sort.
  * The insertion sort component was adapted from Alistair Moffat textbook
  * chapter 7. */
-void get_sorted_array(footpathsll_t *list, node_t **arr) {
+void get_sorted_array(footpathsll_t *list, footpath_t **arr, int (*cmp) (footpath_t *, footpath_t *)) {
 
     int num = get_array(list, arr);
-    node_t *tmp;
-
-    /* performs insertion sort on array */
-    for (int i = 1; i < num; i++) {
-        for (int j = i - 1; j >= 0 && cmp_grade(arr[j]->footpath, arr[j + 1]->footpath) == 1; j--) {
-            tmp = arr[j];
-            arr[j] = arr[j + 1];
-            arr[j + 1] = tmp;
-        }
-    }
-}
-
-// GENERALISE COMP FUNCTION
-void get_sorted_array2(footpathsll_t *list, footpath_t **arr) {
-
-    int num = get_array2(list, arr);
     footpath_t *tmp;
 
     /* performs insertion sort on array */
     for (int i = 1; i < num; i++) {
-        for (int j = i - 1; j >= 0 && cmp_id(arr[j], arr[j + 1]) == 1; j--) {
+        for (int j = i - 1; j >= 0 && cmp(arr[j], arr[j + 1]) == 1; j--) {
             tmp = arr[j];
             arr[j] = arr[j + 1];
             arr[j + 1] = tmp;
@@ -126,20 +108,8 @@ void get_sorted_array2(footpathsll_t *list, footpath_t **arr) {
     }
 }
 
-footpath_t **sort_array(footpath_t **arr, int num) {
-    footpath_t *tmp;
-    for (int i = 1; i < num; i++) {
-        for (int j = i - 1; j >= 0 && cmp_id(arr[j], arr[j + 1]) == 1; j--) {
-            tmp = arr[j];
-            arr[j] = arr[j + 1];
-            arr[j + 1] = tmp;
-        }
-    }
-    return arr;
-}
-
-
-void footpath_printarr(FILE *f, footpath_t **arr, int num_found) {
+/* ========================================================================== */
+void print_array(FILE *f, footpath_t **arr, int num_found) {
 
     for (int i = 0; i < num_found; i++) {
         footpath_print(f, arr[i]);
@@ -148,13 +118,16 @@ void footpath_printarr(FILE *f, footpath_t **arr, int num_found) {
 
 }
 
-void footpath_printarr2(FILE *f, footpath_t **arr, int num_found) {
+/* ========================================================================== */
+void print_array_no_dup(FILE *f, footpath_t **arr, int num_found) {
 
     for (int i = 0; i < num_found; i++) {
         if (id_check(arr, i, num_found)) footpath_print(f, arr[i]);
     }
 }
 
+/* ========================================================================== */
+/* Checks the array for duplicate footpaths */
 int id_check(footpath_t **arr, int index, int num_found) {
     for (int i = index - 1; i >= 0; i--) {
         if (index == 0)
@@ -169,24 +142,7 @@ int id_check(footpath_t **arr, int index, int num_found) {
 
 /* ========================================================================== */
 /* Produces array from linked list */
-int get_array(footpathsll_t *list, node_t **arr) {
-
-    node_t *curr = list->head;
-    int cnt = 0;
-    /* increments count after assigning first element of array */
-    arr[cnt++] = curr;
-    
-    /* iterates through linked list */
-    while (curr != NULL) {
-        arr[cnt++] = curr->next;
-        curr = curr->next;
-    }
-
-    return cnt - 1;
-}
-
-// CHANGE THE ONE ABOVE TO BE ARRAY FOR FOOTPATHS NOT LL NODES
-int get_array2(footpathsll_t *list, footpath_t **arr) {
+int get_array(footpathsll_t *list, footpath_t **arr) {
 
     node_t *curr = list->head;
     int cnt = 0;
@@ -235,17 +191,17 @@ footpath_t **linked_list_search(footpathsll_t *fps, char *query, int *num_found)
  * This function was taken from the webpage:
  *      https://www.geeksforgeeks.org/find-closest-number-array/
  * and adapted to work the grade1in attribute */
-footpath_t *binary_search(node_t **arr, double query, int num) {
+footpath_t *binary_search(footpath_t **arr, double query, int num) {
 
 	int start_index = 0, end_index = num;
     int middle = 0;
 
     /* checks if the query is within the edge footpaths of the sorted array */
-    if (query <= get_grade1in(arr[0]->footpath))
-        return arr[0]->footpath;
+    if (query <= get_grade1in(arr[0]))
+        return arr[0];
 
-    if (query >= get_grade1in(arr[num - 1]->footpath))
-        return arr[num - 1]->footpath;
+    if (query >= get_grade1in(arr[num - 1]))
+        return arr[num - 1];
 
 
     while (start_index < end_index) {
@@ -253,16 +209,16 @@ footpath_t *binary_search(node_t **arr, double query, int num) {
 		middle = (start_index + end_index) / 2;
 
         /* returns if exact match is found */
-		if (query == get_grade1in(arr[middle]->footpath))
-			return arr[middle]->footpath;
+		if (query == get_grade1in(arr[middle]))
+			return arr[middle];
 
         /* if query in left subarray */
-		if (get_grade1in(arr[middle]->footpath) > query) {
+		if (get_grade1in(arr[middle]) > query) {
 
             /* if query is between the middle and one left from the middle returns
                 the closest footpath of the two */
-			if (middle > 0 && query > get_grade1in(arr[middle - 1]->footpath))
-                return get_closest(arr[middle - 1]->footpath, arr[middle]->footpath, query);
+			if (middle > 0 && query > get_grade1in(arr[middle - 1]))
+                return get_closest(arr[middle - 1], arr[middle], query);
 
         end_index = middle;
 
@@ -271,8 +227,8 @@ footpath_t *binary_search(node_t **arr, double query, int num) {
 
             /* if query is between the middle and one right from middle returns the
                 closest footpath of the two */
-            if (middle < num - 1 && query < get_grade1in(arr[middle + 1]->footpath))
-                return get_closest(arr[middle]->footpath, arr[middle + 1]->footpath, query);
+            if (middle < num - 1 && query < get_grade1in(arr[middle + 1]))
+                return get_closest(arr[middle], arr[middle + 1], query);
 
         start_index = middle + 1;
 
@@ -280,7 +236,7 @@ footpath_t *binary_search(node_t **arr, double query, int num) {
     }
 
     /* returns the remaining footpath */
-    return arr[middle]->footpath;
+    return arr[middle];
 }
 
 /* ========================================================================== */
@@ -307,11 +263,22 @@ footpathsll_t **add_footpaths(footpathsll_t **fps_list, footpathsll_t *fps, int 
 }
 
 /* ========================================================================== */
+/* Returns the number of items a linked list has */
 int get_num_items(footpathsll_t *fps) {
+
     return fps->num_items;
+
 }
 
 /* ========================================================================== */
+/* Returns the head footpath of a footpath linked list */
+footpath_t *get_footpath_head(footpathsll_t *fps) {
+    
+    return fps->head->footpath;
+}
+
+/* ========================================================================== */
+/* Clones a given linked list node */
 node_t *clone(node_t* list) {
     if (list == NULL) return NULL;
 
@@ -323,7 +290,9 @@ node_t *clone(node_t* list) {
 }
 
 /* ========================================================================== */
+/* Clones a given linked list */
 footpathsll_t *clone_fp(footpathsll_t *fps) {
+
     footpathsll_t *copy = make_empty_list();
     copy->head = clone(fps->head);
     copy->num_items = fps->num_items;
@@ -331,8 +300,9 @@ footpathsll_t *clone_fp(footpathsll_t *fps) {
 }
 
 /* ========================================================================== */
-
+/* Converts the list of linked lists to an array and sorts it */
 footpath_t **to_array(footpathsll_t **fps_list, int num, int *total) {
+
     footpath_t **fps_found = NULL;
     int tot = 0;
     node_t *curr = NULL;
@@ -359,3 +329,5 @@ footpath_t **to_array(footpathsll_t **fps_list, int num, int *total) {
     return fps_found;
 
 }
+
+/* ========================================================================== */

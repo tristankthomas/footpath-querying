@@ -17,7 +17,7 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #include "data.h"
 #include "linked_list.h"
 
-// combine these two structs some how
+
 struct point_2D {
     long double x;
     long double y;
@@ -40,38 +40,6 @@ enum quadrant {
     SW, NW, NE, SE
 };
 
-// will need to remove struct for ll and footpath (only here to make accessing variables easier)
-struct footpath {
-    int footpath_id;
-    char *address;
-    char *clue_sa;
-    char *asset_type;
-    double delta_z;
-    double distance;
-    double grade1in;
-    int mcc_id;
-    int mccid_int;
-    double rlmax;
-    double rlmin;
-    char *segside;
-    int statusid;
-    int streetid;
-    int street_group;
-    double start_lat;
-    double start_lon;
-    double end_lat;
-    double end_lon;
-};
-
-struct node {
-    footpath_t *footpath;
-    node_t *next;
-};
-
-struct footpaths_ll {
-    node_t *head;
-    int num_items;
-};
 
 /* =========================== Insertion functions ========================== */
 /* Creates an empty quadtree by allocating memory for root node */
@@ -128,7 +96,7 @@ qt_node_t *insert_data(qt_node_t *node, footpathsll_t *footpaths, point_2D_t *co
         if (new_coords->x == old_coords->x && new_coords->y == old_coords->y) {
 
             /* frees everything thats been duplicated or no longer needed */
-            old = insert_at_head(old, fp_dup(new->head->footpath));
+            old = insert_at_head(old, fp_dup(get_footpath_head(new)));
             if (node->footpaths)
                 free_list(node->footpaths);
             node->footpaths = NULL;
@@ -160,7 +128,7 @@ qt_node_t *insert_data(qt_node_t *node, footpathsll_t *footpaths, point_2D_t *co
     if (node->colour == GREY) {
 
         if (determine_quadrant(coords, node->rectangle) == NW) {
-            node->NW = insert_data(node->NW, footpaths, coords); // if next quadrant is leaf node will either subdivide or insert
+            node->NW = insert_data(node->NW, footpaths, coords);
 
         } else if (determine_quadrant(coords, node->rectangle) == NE) {
             node->NE = insert_data(node->NE, footpaths, coords);
@@ -180,18 +148,24 @@ qt_node_t *insert_data(qt_node_t *node, footpathsll_t *footpaths, point_2D_t *co
 
 
 /* ========================================================================== */
-qt_node_t *subdivide(qt_node_t *node, footpathsll_t *fps_old, footpathsll_t *fps_new, point_2D_t *new_coords, point_2D_t *old_coords) {
+/* Subdivides a quadtree node until the two footpath lists are in seperate nodes */
+qt_node_t *subdivide(qt_node_t *node, footpathsll_t *fps_old, footpathsll_t *fps_new, 
+        point_2D_t *new_coords, point_2D_t *old_coords) {
 
     /* centre point of rectangle */
-    long double centre_x = node->rectangle->bot_left.x + ((node->rectangle->top_right.x - node->rectangle->bot_left.x) / 2);
-    long double centre_y = node->rectangle->bot_left.y + ((node->rectangle->top_right.y - node->rectangle->bot_left.y) / 2);
+    long double centre_x = node->rectangle->bot_left.x + 
+        ((node->rectangle->top_right.x - node->rectangle->bot_left.x) / 2);
+    long double centre_y = node->rectangle->bot_left.y + 
+        ((node->rectangle->top_right.y - node->rectangle->bot_left.y) / 2);
 
     rectangle_2D_t *sw, *se, *nw, *ne;
 
     /* creates the rectangle boundaries for all children nodes */
     sw = make_rect(node->rectangle->bot_left, make_point(centre_x, centre_y));
-    se = make_rect(make_point(centre_x, node->rectangle->bot_left.y), make_point(node->rectangle->top_right.x, centre_y));
-    nw = make_rect(make_point(node->rectangle->bot_left.x, centre_y), make_point(centre_x, node->rectangle->top_right.y));
+    se = make_rect(make_point(centre_x, node->rectangle->bot_left.y), 
+        make_point(node->rectangle->top_right.x, centre_y));
+    nw = make_rect(make_point(node->rectangle->bot_left.x, centre_y), 
+        make_point(centre_x, node->rectangle->top_right.y));
     ne = make_rect(make_point(centre_x, centre_y), node->rectangle->top_right);
 
     /* creates all children nodes only if not already created */
@@ -273,6 +247,7 @@ qt_node_t *subdivide(qt_node_t *node, footpathsll_t *fps_old, footpathsll_t *fps
 
 
 /* ========================== Point query functions ========================= */
+/* Searches the quadtree for a single point */
 footpathsll_t *search_tree(qt_node_t *node, point_2D_t *query) {
 
     /* checks to see if query is within bounds and is in quadtree */
@@ -311,15 +286,16 @@ footpathsll_t *search_tree(qt_node_t *node, point_2D_t *query) {
 
 
 /* ========================================================================== */
-// check that the point lies in the coords and return true if so
+/* Checks that a given point lies within a rectangle region */
 int in_rectangle(point_2D_t *point, rectangle_2D_t *rect) {
+
     return point->x <= rect->top_right.x && point->x > rect->bot_left.x &&
             point->y >= rect->bot_left.y && point->y < rect->top_right.y;
 
 }
 
 /* ========================================================================== */
-// call in_rectangle for all four quadrants (define rects) and return the quadrant from enum
+/* Finds which quadrant of a rectangle region a point lies in */
 quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect) {
 
     long double centre_x = rect->bot_left.x + ((rect->top_right.x - rect->bot_left.x) / 2);
@@ -332,28 +308,19 @@ quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect) {
     ne = make_rect(make_point(centre_x, centre_y), rect->top_right);
 
     if (in_rectangle(point, sw)) {
-        free(sw);
-        free(se);
-        free(nw);
-        free(ne);
+        free(sw); free(se); free(nw); free(ne);
         return SW;
+
     } else if (in_rectangle(point, se)) {
-        free(sw);
-        free(se);
-        free(nw);
-        free(ne);
+        free(sw); free(se); free(nw); free(ne);
         return SE;
+
     } else if (in_rectangle(point, nw)) {
-        free(sw);
-        free(se);
-        free(nw);
-        free(ne);
+        free(sw); free(se); free(nw); free(ne);
         return NW;
+
     } else if (in_rectangle(point, ne)) {
-        free(sw);
-        free(se);
-        free(nw);
-        free(ne);
+        free(sw); free(se); free(nw); free(ne);
         return NE;
     }
     return -1;
@@ -363,110 +330,69 @@ quadrant_t determine_quadrant(point_2D_t *point, rectangle_2D_t *rect) {
 
 
 /* ========================== Range query functions ========================= */
+/* Searches the quadtree for a region and returns all footpath linked lists in an array */
 footpathsll_t **range_query(qt_node_t *node, rectangle_2D_t *query, footpathsll_t **fps_found, int *num_found) {
-    //static int is_found = 0;
 
     if (node->colour == BLACK && in_rectangle(node->coords, query)) {
         fps_found = add_footpaths(fps_found, node->footpaths, ++(*num_found));
-        //is_found = 1;
         return fps_found;
     }
 
     if (node->colour == BLACK && !in_rectangle(node->coords, query)) {
-        //is_found = 1;
         return fps_found;
     }
 
-    if (node->colour == WHITE) {
-        //is_found = 0;
-        return fps_found;
-    }
 
     if (node->colour == GREY && rectangle_overlap(node->rectangle, query)) {
-        if (rectangle_overlap(node->SW->rectangle, query)) {
-            if (is_black_node(node->SW)) 
-                printf(" SW");
+        if (rectangle_overlap(node->SW->rectangle, query) && node->SW->colour != WHITE) {
+
+            printf(" SW");
             fps_found = range_query(node->SW, query, fps_found, num_found);
 
         }
 
-        if (rectangle_overlap(node->NW->rectangle, query)) {
-            if (is_black_node(node->NW)) 
-                printf(" NW");
+        if (rectangle_overlap(node->NW->rectangle, query) && node->NW->colour != WHITE) {
+
+            printf(" NW");
             fps_found = range_query(node->NW, query, fps_found, num_found);
 
         }
-        if (rectangle_overlap(node->NE->rectangle, query)) {
-            if (is_black_node(node->NE)) 
-                printf(" NE");
+
+        if (rectangle_overlap(node->NE->rectangle, query) && node->NE->colour != WHITE) {
+
+            printf(" NE");
             fps_found = range_query(node->NE, query, fps_found, num_found);
 
         } 
 
-        if (rectangle_overlap(node->SE->rectangle, query)) {
-            if (is_black_node(node->SE)) 
-                printf(" SE");
+        if (rectangle_overlap(node->SE->rectangle, query) && node->SE->colour != WHITE) {
+
+            printf(" SE");
             fps_found = range_query(node->SE, query, fps_found, num_found);
 
         }
 
     }
-    //is_found = 0;
 
     return fps_found;
 
     
 }
 
-int is_black_node(qt_node_t *node) {
-    static int is_black = 0;
-    static int count = 0;
 
-    if (node == NULL) {
-        return 0;
-    }
-
-    if (node->colour == BLACK) {
-        if (count == 0) {
-            is_black = 0;
-            return 1;
-        }
-        is_black = 1;
-        return 1;
-    }
-
-    is_black_node(node->NE);
-    count = 1;
-    is_black_node(node->NW);
-    count = 1;
-    is_black_node(node->SE);
-    count = 1;
-    is_black_node(node->SW);
-    count = 1;
-    
-    if (is_black == 1) {
-        is_black = 0;
-        count = 0;
-        return 1;
-    }
-    count = 0;
-    return 0;
-}
-
-
-
+/* ========================================================================== */
+/* Checks if two rectangle regions overlap */
 int rectangle_overlap(rectangle_2D_t *rect1, rectangle_2D_t *rect2) {
     /* overlap logic (allowing overlap on border) */
-
     return !((rect2->bot_left.x > rect1->top_right.x) || (rect1->bot_left.x > rect2->top_right.x) ||
             (rect2->bot_left.y > rect1->top_right.y) || (rect1->bot_left.y > rect2->top_right.y));
 
 }
 
-
-
 /* ============================= Free functions ============================= */
+/* Frees the whole quadtree */
 void free_tree(qt_node_t *node) {
+
     if (!node) {
         return;
     }
@@ -479,10 +405,13 @@ void free_tree(qt_node_t *node) {
     
 }
 
-
+/* ========================================================================== */
+/* Frees a single quadtree node */
 void free_node(qt_node_t *node) {
+
     free(node->rectangle);
     node->rectangle = NULL;
+
     if (node->footpaths != NULL) {
         free_list(node->footpaths);
         node->footpaths = NULL;
@@ -497,15 +426,11 @@ void free_node(qt_node_t *node) {
     
 }
 
-// void free_rect(rectangle_2D_t *rect) {
-//     free(rect->top_right);
-//     free(rect->bot_left);
-//     free(rect);
-// }
-
 
 /* ===================== Creating and cloning functions ===================== */
+/* Converts the command line arguments to a rectangle for the root node */
 rectangle_2D_t *get_root_rect(rectangle_2D_t *rectangle, char **arguments) {
+
     rectangle = (rectangle_2D_t *) malloc(sizeof(*rectangle));
     rectangle->bot_left.x = strtold(arguments[4], NULL);
     rectangle->bot_left.y = strtold(arguments[5], NULL);
@@ -515,20 +440,23 @@ rectangle_2D_t *get_root_rect(rectangle_2D_t *rectangle, char **arguments) {
 }
 
 /* ========================================================================== */
+/* Returns the type of coords (start or end) the fp is being inserted by */
 point_2D_t *get_coord(footpath_t *fp, int point_type) {
+
     point_2D_t *coord = NULL;
     coord = (point_2D_t *) malloc(sizeof(*coord));
     assert(coord);
-    coord->x = (point_type) ? fp->end_lon : fp->start_lon;
-    coord->y = (point_type) ? fp->end_lat : fp->start_lat;
+    coord->x = (point_type) ? get_fp_coord(fp, END_LON) : get_fp_coord(fp, START_LON);
+    coord->y = (point_type) ? get_fp_coord(fp, END_LAT) : get_fp_coord(fp, START_LAT);
 
     return coord;
 }
 
 
 /* ========================================================================== */
-// merge these two functions
+/* Creates a 2D point with long doubles as arguments */
 point_2D_t make_point(long double x, long double y) {
+
     point_2D_t point;
     point.x = x;
     point.y = y;
@@ -537,7 +465,10 @@ point_2D_t make_point(long double x, long double y) {
 }
 
 
+/* ========================================================================== */
+/* Creates a 2D point from doubles returning as pointer */
 point_2D_t *make_point_ptr(double x, double y) {
+
     point_2D_t *point = NULL;
     point = (point_2D_t *) malloc(sizeof(*point));
     point->x = x;
@@ -547,7 +478,9 @@ point_2D_t *make_point_ptr(double x, double y) {
 }
 
 /* ========================================================================== */
+/* Creates a rectangle from two 2D points (non pointers) */
 rectangle_2D_t *make_rect(point_2D_t bot_left, point_2D_t top_right) {
+
     rectangle_2D_t *rect = NULL;
     rect = (rectangle_2D_t *) malloc(sizeof(*rect));
     assert(rect);
@@ -556,7 +489,10 @@ rectangle_2D_t *make_rect(point_2D_t bot_left, point_2D_t top_right) {
     return rect;
 }
 
+/* ========================================================================== */
+/* Creates a rectangle from two 2D point pointers */
 rectangle_2D_t *make_rect_ptrs(point_2D_t *bot_left, point_2D_t *top_right) {
+
     rectangle_2D_t *rect = NULL;
     rect = (rectangle_2D_t *) malloc(sizeof(*rect));
     assert(rect);
@@ -566,7 +502,9 @@ rectangle_2D_t *make_rect_ptrs(point_2D_t *bot_left, point_2D_t *top_right) {
 }
 
 /* ========================================================================== */
+/* Duplicates coordinates */
 point_2D_t *coord_dup(point_2D_t *coord) {
+
     point_2D_t *copy = NULL;
     copy = (point_2D_t *) malloc(sizeof(*copy));
     copy->x = coord->x;

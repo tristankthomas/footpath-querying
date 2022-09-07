@@ -29,29 +29,6 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #define START 0
 #define END 1
 
-struct footpath {
-    int footpath_id;
-    char *address;
-    char *clue_sa;
-    char *asset_type;
-    double delta_z;
-    double distance;
-    double grade1in;
-    int mcc_id;
-    int mccid_int;
-    double rlmax;
-    double rlmin;
-    char *segside;
-    int statusid;
-    int streetid;
-    int street_group;
-    double start_lat;
-    double start_lon;
-    double end_lat;
-    double end_lon;
-
-};
-
 /* -- function prototypes - */
 int process_args(int argc, char *argv[]);
 
@@ -88,15 +65,8 @@ int main(int argc, char *argv[]) {
  * This function was adapted from the qStud program in workshops W1-W4 */
 int process_args(int argc, char *argv[]) {
     
-    /* checks the command line arguments are valid */
-	if (argc < 4) {
-		fprintf(stderr, "Usage: %s dictionary_type input_file_name output_file_name, where:\n", argv[0]);
-		fprintf(stderr, "       \t - dictionary_type is \"1\" for linear search lookup using address and \"2\" "
-                        " for binary search lookup using grade1in\n");
-		fprintf(stderr, "       \t - input_file_name: data file for building dictionary\n");
-		fprintf(stderr, "       \t - output_file_name: a file for outputting statistics for searches\n");
-		exit(EXIT_FAILURE);
-	}
+    /* makes sure command line arguments are valid */
+	assert(argc < 9);
 
 	return atoi(argv[1]);
 }
@@ -147,12 +117,12 @@ void querying(char **arguments, FILE *input, FILE *output,
         /* creates footpath linked list */
         footpathsll_t *footpaths = get_footpath_list(data_file_name);
         
-        node_t *arr[get_num_items(footpaths)];
+        footpath_t *arr[get_num_items(footpaths)];
         footpath_t *footpath_found = NULL;
         double dquery = 0.0;
 
         /* creates sorted array from linked list */
-        get_sorted_array(footpaths, arr);
+        get_sorted_array(footpaths, arr, cmp_grade);
 
         /* iterates through query input and stores as string (to keep formatting) */
         while (fscanf(input, "%s", query) == 1) {
@@ -195,10 +165,10 @@ void querying(char **arguments, FILE *input, FILE *output,
             footpath_t *arr[get_num_items(footpaths_found)];
 
             // make this function flexible for any attribute
-            get_sorted_array2(footpaths_found, arr);
+            get_sorted_array(footpaths_found, arr, cmp_id);
             
             fprintf(out_file, "%s %s\n", lon_str, lat_str);
-            footpath_printarr(out_file, arr, get_num_items(footpaths_found));
+            print_array(out_file, arr, get_num_items(footpaths_found));
 
             free(point_query);
             
@@ -216,41 +186,51 @@ void querying(char **arguments, FILE *input, FILE *output,
         long double right_lon, top_lat, left_lon, bot_lat;
         point_2D_t *bot_left, *top_right;
         rectangle_2D_t *query;
+        
         /* creates footpath quad tree */
         qt_node_t *quad_tree = get_footpath_tree(data_file_name, arguments);
         footpath_t **arr = NULL;
 
         while(fscanf(input, "%s %s %s %s", llon_str, blat_str, rlon_str, tlat_str) == 4) {
 
-            /* converts string query to double */
             num_lists_found = 0;
             total = 0;
+
+            /* converts string query to double */
             left_lon = strtold(llon_str, NULL);
             bot_lat = strtold(blat_str, NULL);
             right_lon = strtold(rlon_str, NULL);
             top_lat = strtold(tlat_str, NULL);
+            /* converts doubles to point */
             bot_left = make_point_ptr(left_lon, bot_lat);
             top_right = make_point_ptr(right_lon, top_lat);
+            /* converts points to rectangle */
             query = make_rect_ptrs(bot_left, top_right);
+
             printf("%s %s %s %s -->", llon_str, blat_str, rlon_str, tlat_str);
+            /* searches quadtree from region query */
             footpaths_found = range_query(quad_tree, query, footpaths_found, &num_lists_found);
             printf("\n");
+
+            /* converts array of linked lists to a dynamic array of footpaths */
             arr = to_array(footpaths_found, num_lists_found, &total);
-            //arr = sort_array(arr, num_found);
+
             fprintf(out_file, "%s %s %s %s\n", llon_str, blat_str, rlon_str, tlat_str);
-            footpath_printarr2(out_file, arr, total);
+            print_array_no_dup(out_file, arr, total);
+
+            /* frees query and footpath arrays */
             free(top_right);
             free(bot_left);
             free(query);
+            query = NULL;
 
             free(footpaths_found);
-            free(arr);
-
-            // free footpath array and linked list array
-            query = NULL;
-            arr = NULL;
             footpaths_found = NULL;
+            free(arr);
+            arr = NULL;
+            
         }
+
         free_tree(quad_tree);
         quad_tree = NULL;
 

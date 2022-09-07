@@ -33,7 +33,7 @@ data.o: data.c data.h
 
 linked_list.o: linked_list.c linked_list.h data.h
 
-quad_tree.o: quad_tree.c quad_tree.h data.h
+quad_tree.o: quad_tree.c quad_tree.h linked_list.h data.h
 
 clean:
 	rm -f $(OBJ) $(EXE1) $(EXE2) $(EXE3) $(EXE4)

@@ -15,6 +15,11 @@ Created by Tristan Thomas (tkthomas@student.unimelb.edu.au)
 #define MAX_STR_LEN 128
 #define INIT_SIZE 2
 
+#define START_LON 1
+#define START_LAT 2
+#define END_LON 3
+#define END_LAT 4
+
 /* --- Data declarations --- */
 typedef struct footpath footpath_t;
 
@@ -28,7 +33,11 @@ void skip_header_line(FILE *f);
 /* Reads the string attributes of the footpath */
 int read_string(FILE *f, char *str);
 
-/* Returns the 'grade1in' footpath variable */
+/* Returns a specified footpath variable */
+double get_fp_coord(footpath_t *fp, int type);
+
+int get_id(footpath_t *fp);
+
 double get_grade1in(footpath_t *fp);
 
 /* Compares the query to the footpath address */
@@ -48,15 +57,12 @@ void free_footpath(footpath_t *fp);
 
 /* Compares grade1in of two footpaths */
 int cmp_grade(footpath_t *fp1, footpath_t *fp2);
-int cmp_id(footpath_t *fp1, footpath_t *fp2);
 
-int get_is_freed(footpath_t *fp);
+int cmp_id(footpath_t *fp1, footpath_t *fp2);
 
 footpath_t *fp_dup(footpath_t *fp);
 
 /* Returns the closest footpath based on grade1in value */
 footpath_t *get_closest(footpath_t *fp1, footpath_t *fp2, double value);
-
-int get_id(footpath_t *fp);
 
 #endif
