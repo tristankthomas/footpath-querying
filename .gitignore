@@ -1,7 +1,4 @@
 *.o
-dict1
-dict2
+dict*
 .vscode
-*.csv
-tests
 .DS_Store
