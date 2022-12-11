@@ -3,7 +3,7 @@ CC = gcc
 CFLAGS = -Wall -g
 
 # define sets of header source files and object files
-SRC = driver.c data.c linked_list.c quad_tree.c
+SRC = src/driver.c src/data.c src/linked_list.c src/quad_tree.c
 
 # OBJ is the same as SRC, just replace .c with .h
 OBJ = $(SRC:.c=.o)
@@ -27,13 +27,13 @@ $(EXE3): $(OBJ)
 $(EXE4): $(OBJ)
 	$(CC) $(CFLAGS) -o $(EXE4) $(OBJ) $(LIB)
 
-driver.o: driver.c data.h linked_list.h
+driver.o: src/driver.c src/data.h src/linked_list.h
 
-data.o: data.c data.h
+data.o: src/data.c src/data.h
 
-linked_list.o: linked_list.c linked_list.h data.h
+linked_list.o: src/linked_list.c src/linked_list.h src/data.h
 
-quad_tree.o: quad_tree.c quad_tree.h linked_list.h data.h
+quad_tree.o: src/quad_tree.c src/quad_tree.h src/linked_list.h src/data.h
 
 clean:
 	rm -f $(OBJ) $(EXE1) $(EXE2) $(EXE3) $(EXE4)

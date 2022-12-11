@@ -1,5 +1,5 @@
 # Footpath Querying System for the City of Melbourne
-This project was created as part of an assignment for an algorithms subject and is split into four stages. Each stage implements a different querying mechanism for looking up footpaths in Melbourne. Various algorithms (for querying) and data structures (for storing) were created. The data structures used include linked lists, dynamic arrays and quadtrees. All code was written by Tristan Thomas with necessary acknowledgments commented throughout code. 
+This project was created as part of an assignment for an algorithms subject and is split into four stages. Each stage implements a different querying mechanism for looking up footpaths in Melbourne. Various algorithms (for querying) and data structures (for storing) were created. The data structures used include linked lists, dynamic arrays and quadtrees. All code was written by Tristan Thomas with necessary credits commented throughout code. 
 
 ### Stage 1
 The first stage stores the footpaths in a linkedlist which can simply be queried using the footpath `address` as the key. This outputs the footpaths found (this is same for all four stages) to the output file and the number of footpaths found to stdout.
